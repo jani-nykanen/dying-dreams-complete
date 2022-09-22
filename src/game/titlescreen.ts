@@ -1,6 +1,5 @@
 import { Canvas, TextAlign } from "../renderer/canvas.js";
 import { KeyState } from "../core/keyboard.js";
-import { LEVEL_DATA } from "./leveldata.js";
 import { clamp } from "../common/math.js";
 import { Menu, MenuButton } from "./menu.js";
 import { TransitionType } from "../core/transition.js";
@@ -33,7 +32,7 @@ export class TitleScreen implements Scene {
                     let index = 1;
                     try {
 
-                        index = clamp(Number(window.localStorage.getItem("dying_dreams_js13k_save")), 1, LEVEL_DATA.length);
+                        index = Math.max(Number(window.localStorage.getItem("dying_dreams_js13k_save")), 1);
                     }
                     catch (e) {
 

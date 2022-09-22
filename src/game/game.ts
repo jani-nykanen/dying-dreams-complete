@@ -1,11 +1,14 @@
 import { Canvas } from "../renderer/canvas.js";
 import { KeyState } from "../core/keyboard.js";
-import { LEVEL_DATA } from "./leveldata.js";
 import { Menu, MenuButton } from "./menu.js";
 import { Stage } from "./stage.js";
 import { TransitionType } from "../core/transition.js";
 import { Scene, SceneParam } from "../core/scene.js";
 import { CoreEvent } from "../core/event.js";
+
+
+// TODO: Remove
+const LAST_LEVEL = 13;
 
 
 const HINTS = [
@@ -30,8 +33,6 @@ export class Game implements Scene {
 
 
     constructor() {
-
-        this.stage = new Stage(LEVEL_DATA[this.stageIndex-1], this.stageIndex);
 
         this.pauseMenu = new Menu(
             [
@@ -91,12 +92,14 @@ export class Game implements Scene {
 
     public init(param : SceneParam, event: CoreEvent) : void {
 
+        this.stageIndex = 1;
+
         this.pauseMenu.changeButtonText(3, event.audio.getStateString());
         if (param != null) {
 
             this.stageIndex = Number(param);
-            this.stage.changeStage(this.stageIndex, LEVEL_DATA[this.stageIndex-1]);
         }
+        this.stage = new Stage(this.stageIndex, event);
 
         this.hintPos = 0;
     }
@@ -136,7 +139,7 @@ export class Game implements Scene {
 
         if (this.stage.update(event, event.assets)) {
 
-            if (this.stageIndex == LEVEL_DATA.length) {
+            if (event.assets.getTilemap(String(this.stageIndex+1)) == undefined) {
 
                 event.transition.activate(true, TransitionType.Fade, 1.0/60.0, (event : CoreEvent) => {
 
@@ -159,7 +162,7 @@ export class Game implements Scene {
                         console.log(e);
                     }
                     ++ this.stageIndex;
-                    this.stage.changeStage(this.stageIndex, LEVEL_DATA[this.stageIndex-1]);
+                    this.stage.changeStage(this.stageIndex, event);
                     this.hintPos = 0;
                 });
             }

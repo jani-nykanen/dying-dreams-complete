@@ -1,0 +1,36 @@
+{
+    "bitmapPath" : "assets/bitmaps/",
+    "bitmaps" : [
+
+        {"name": "figure", "path": "figure.png"},
+        {"name": "bat", "path": "bat.png"},
+        {"name": "font", "path": "font.png"},
+        {"name": "fontBig", "path": "font_big.png"},
+        {"name": "fontYellow", "path": "font_yellow.png"},
+        {"name": "background", "path": "background.png"},
+        {"name": "staticTiles", "path": "static_tiles.png"}
+    ],
+
+    "samplePath" : "assets/audio/",
+    "samples" : [
+
+    ],
+
+    "tilemapPath" : "assets/tilemaps/",
+    "tilemaps" : [
+
+        {"name": "1", "path": "1.tmx"},
+        {"name": "2", "path": "2.tmx"},
+        {"name": "3", "path": "3.tmx"},
+        {"name": "4", "path": "4.tmx"},
+        {"name": "5", "path": "5.tmx"},
+        {"name": "6", "path": "6.tmx"},
+        {"name": "7", "path": "7.tmx"},
+        {"name": "8", "path": "8.tmx"},
+        {"name": "9", "path": "9.tmx"},
+        {"name": "10", "path": "10.tmx"},
+        {"name": "11", "path": "11.tmx"},
+        {"name": "12", "path": "12.tmx"},
+        {"name": "13", "path": "13.tmx"}
+    ]
+}

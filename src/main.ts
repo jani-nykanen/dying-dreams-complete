@@ -1,8 +1,5 @@
-import { createBackgroundBitmap } from "./game/background.js";
-import { generateFont, generateRGB222LookupTable, loadBitmapRGB222 } from "./game/bitmapgen.js";
 import { Core } from "./core/core.js"
 import { Game } from "./game/game.js";
-import { PALETTE1 } from "./game/palettedata.js";
 import { Ramp } from "./audio/sample.js";
 import { StartIntro } from "./game/startintro.js";
 import { StartScreen } from "./game/startscreen.js";
@@ -62,18 +59,6 @@ const constructSamples = (event : CoreEvent) : void => {
 }
 
 
-const constructBitmaps = (event : CoreEvent) : void => {
-
-    let lookup = generateRGB222LookupTable();
-
-    event.assets.addBitmap("background", createBackgroundBitmap(event.assets, 160, 160, 8));
-    event.assets.addBitmap("fontBig", generateFont("bold 24px Arial", 32, 32, 2, 8, 127, [170, 255, 0], true));
-
-    event.assets.loadBitmapRGB222("base", "b.png", lookup, PALETTE1);
-    event.assets.loadBitmapRGB222("font", "f.png", lookup, (new Array<number[]>(16*6)).fill([-1, 0, 0, 0b111111]));
-    event.assets.loadBitmapRGB222("fontYellow", "f.png", lookup, (new Array<number[]>(16*6)).fill([-1, 0, 0, 0b111100]));
-}
-
 
 window.onload = () => (new Core(160, 144))
         .addScene("game", new Game())
@@ -83,8 +68,9 @@ window.onload = () => (new Core(160, 144))
         .addScene("start", new StartScreen())
         .run("start", (event : CoreEvent) => {
 
-            constructBitmaps(event);
             constructSamples(event);
+
+            event.assets.parseIndexFile("assets/index.json");
 
             event.keyboard
                 .addAction("right", "ArrowRight", "KeyD")

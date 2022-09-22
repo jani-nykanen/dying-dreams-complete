@@ -241,7 +241,8 @@ export class Canvas {
 
         if (align == TextAlign.Center) {
 
-            dx -= (str.length * (cw + xoff)) / 2.0 ;
+            // TODO: Check if +1 needed or not!
+            dx -= ( (str.length+1) * (cw + xoff)) / 2.0 ;
             x = dx;
         }
         else if (align == TextAlign.Right) {

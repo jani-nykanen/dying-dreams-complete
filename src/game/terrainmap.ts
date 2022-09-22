@@ -1,6 +1,6 @@
 
 
-export const COLUMN_COUNT = 7; // Amount of tiles per row in tileset bitmap
+export const COLUMN_COUNT = 8; // Amount of tiles per row in tileset bitmap
 
 
 const getTile = (data : Array<number>, width : number, height : number, x : number, y : number, def = 1) : number => {
@@ -39,7 +39,7 @@ const computeTerrainDataForGroundTile = (data : Array<number>, width : number, h
             out[p] = 2;
             if (x > 0) {
 
-                out[p-1] = COLUMN_COUNT + 7;
+                out[p-1] = 8;
             }
         }
     }

@@ -177,8 +177,8 @@ export class RubbleParticle extends Particle {
         let px = Math.round(this.pos.x);
         let py = Math.round(this.pos.y);
 
-        let srcx = 80 + (this.tileIndex % 2) * 8;
-        let srcy = Math.floor(this.tileIndex/2) * 8;
+        let srcx = 16 + (this.tileIndex % 2) * 8;
+        let srcy = 16 + Math.floor(this.tileIndex/2) * 8;
 
         canvas.drawBitmapRegion(bmp, srcx, srcy, 8, 8,
             px-4, py-4);
@@ -222,7 +222,7 @@ export class Bat extends Particle {
     }
 
 
-    public draw(canvas : Canvas, bmp : Bitmap) {
+    public draw(canvas : Canvas, bmp : Bitmap | undefined) {
 
         if (!this.exist)
             return;
@@ -231,7 +231,7 @@ export class Bat extends Particle {
         let py = Math.round(this.pos.y);
 
         canvas.drawBitmapRegion(bmp, 
-            96, 32 + this.frame*8, 16, 8,
+            0, this.frame*8, 16, 8,
             px-4, py-4);
     }
 

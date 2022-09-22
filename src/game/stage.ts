@@ -54,9 +54,14 @@ export class Stage {
     public readonly height = 9;
 
 
-    constructor(initialMap : Array<number>, index : number) {
+    constructor(index : number, event : CoreEvent) {
 
-        this.baseTilemap = Array.from(initialMap);
+        let map = event.assets.getTilemap(String(index));
+        if (map == undefined) {
+
+            throw "No level data for map index " + String(index);
+        }
+        this.baseTilemap = Array.from(map.cloneLayer(1) as number[]);
 
         this.states = new Array<PuzzleState> ();
         this.activeState = new PuzzleState(
@@ -552,18 +557,6 @@ export class Stage {
 
                     canvas.drawBitmapRegion(bmp, sx*8, sy*8, 8, 8, x*8, y*8);
                 }
-
-                // Tile correction
-                if (y > 0) {
-
-                    tid = this.terrainMap[(y-1) * this.width * 2 + x]
-                    if (tid >= 1 && tid <= 3) {
-
-                        canvas.setFillColor(170, 85, 85)
-                            .fillRect(x*8+2, y*8, 4, 1);
-                            
-                    }
-                }
             }
         }
     }
@@ -608,32 +601,25 @@ export class Stage {
 
                 for (let j = 0; j < 2; ++ j) {
 
-                    canvas.drawBitmapRegion(bmp, 56, 0, 8, 8, dx, dy + j*8)
-                        .drawBitmapRegion(bmp, 56, 0, 8, 8, dx+8, dy + j*8, Flip.Horizontal);
+                    canvas.drawBitmapRegion(bmp, 48, 40, 16, 8, dx, dy + j*8);
                 }
-
                 if (y > 0 && this.baseTilemap[(y-1)*this.width + x] != 2) {
 
-                    dy -= 8;
-                    canvas.drawBitmapRegion(bmp, 56, 8, 8, 8, dx, dy)
-                            .drawBitmapRegion(bmp, 56, 8, 8, 8, dx+8, dy, Flip.Horizontal);  
+                    canvas.drawBitmapRegion(bmp, 48, 32, 16, 8, dx, dy -  8);
                 }
-                 break;
+                break;
 
             // Bridge
             case 3:
 
-                for (let i = 0; i < 2; ++ i) {
-
-                    canvas.drawBitmapRegion(bmp, 64, 0, 8, 16, dx + i*8, dy + BRIDGE_OFF);
-                }
+                canvas.drawBitmapRegion(bmp, 0, 16, 16, 16, dx, dy + BRIDGE_OFF);
                 break;
 
             // Flame
             case 5:
 
                 canvas.drawHorizontallyWavingBitmapRegion(
-                    bmp, 64, 32, 16, 16, dx, dy,
+                    bmp, 16, 32, 16, 16, dx, dy,
                     this.staticAnimationTimer * Math.PI*2,
                     Math.PI*4 / 16, 1);
                 break;
@@ -641,8 +627,7 @@ export class Stage {
             // Spikes
             case 6:
 
-                for (let i = 0; i < 2; ++ i)
-                    canvas.drawBitmapRegion(bmp, 72, 0, 8, 8, dx + i*8, dy+8);
+                canvas.drawBitmapRegion(bmp, 48, 8, 16, 8, dx, dy+8);
                 break;
 
             // Lava
@@ -654,13 +639,13 @@ export class Stage {
             // Ice block
             case 8:
 
-                canvas.drawBitmapRegion(bmp, 80, 32, 16, 16, dx, dy);
+                canvas.drawBitmapRegion(bmp, 0, 32, 16, 16, dx, dy);
                 break;
 
             // Breaking block
             case 9:
 
-                canvas.drawBitmapRegion(bmp, 80, 0, 16, 16, dx, dy);
+                canvas.drawBitmapRegion(bmp, 16, 16, 16, 16, dx, dy);
                 break;
 
             // Button
@@ -669,17 +654,16 @@ export class Stage {
                 if (this.activeState.getTile(1, x, y) == 0 || 
                     (this.moving && this.moveTimer < 0.5)) {
 
-                    canvas.drawBitmapRegion(bmp, 48, 24, 16, 8, dx, dy+8);
+                    canvas.drawBitmapRegion(bmp, 32, 32, 16, 8, dx, dy+8);
                 }
-
-                canvas.drawBitmapRegion(bmp, 48, 40, 16, 8, dx, dy+8);
+                canvas.drawBitmapRegion(bmp, 32, 40, 16, 8, dx, dy+8);
                 break;
 
             // Toggleable blocks
             case 12:
             case 13:
                     
-                canvas.drawBitmapRegion(bmp, 96, 16 - (v-12)*16, 16, 16, dx, dy);
+                canvas.drawBitmapRegion(bmp, 48 - (v-12)*16, 16, 16, 16, dx, dy);
                 break;
 
             default:
@@ -693,22 +677,18 @@ export class Stage {
         x : number, y : number, dx : number, dy : number, 
         direction : Direction) : void {
     
-        const LEG_X = [0, 16, 16, 32, 32, 48];
-        const LEG_Y = [8, 0, 8, 0, 8, 0];
-    
         let frame = 0;
-        let climbing = false;
-    
         let horizontal = direction == Direction.Left || direction == Direction.Right;
+        let climbing = false;
     
         // Check if climbing
         if (!horizontal &&
             (this.activeState.getTile(0, x, y) == 2 &&
             (this.activeState.getTile(0, x, y+1) != 1 || direction == Direction.Down)) ||
             (direction == Direction.Up && this.activeState.getTile(0, x, y+1) == 2)) {
-    
+                
             climbing = true;
-            frame = 0;
+            frame = 6;
             if (direction != Direction.None) {
     
                 frame += Math.floor(this.moveTimer * 2);
@@ -729,21 +709,12 @@ export class Stage {
             frame = 1 + Math.floor(4 * this.moveTimer);
         }
     
-        let sy = 16;
-        if (this.activeState.getTile(1, x, y-1) == 4)
-                    sy = 32;
+        let row = 0;
+        if (!climbing && this.activeState.getTile(1, x, y-1) == 4)
+            row = 1;
     
-        if (climbing) {
-    
-            canvas.drawBitmapRegion(bmp, 64, 16, 16, 16, dx, dy+1,
-                frame == 0 ? Flip.None : Flip.Horizontal);
-            return;
-        }
-    
-        canvas.drawBitmapRegion(bmp, 0, sy, 16, 8, 
-                dx, dy + 1, this.activeState.getFlip())
-              .drawBitmapRegion(bmp, LEG_X[frame], sy + LEG_Y[frame], 16, 8, 
-                                dx, dy + 9, this.activeState.getFlip()); 
+        canvas.drawBitmapRegion(bmp, frame*16, row*16, 16, 16, 
+                dx, dy + 1, this.activeState.getFlip());
     }
 
 
@@ -779,7 +750,7 @@ export class Stage {
             // Boulder
             case 10:
     
-                canvas.drawBitmapRegion(bmp, 80, 16, 16, 16, dx, dy+1);
+                canvas.drawBitmapRegion(bmp, 96, 16, 16, 16, dx, dy+1);
                 break;
     
             default:
@@ -792,7 +763,7 @@ export class Stage {
     private drawStageClearText(canvas : Canvas, bmpFont : Bitmap) : void {
 
         const WAIT_TIME = 60;
-        const OFFSET = -14;
+        const OFFSET = -18;
 
         const MESSAGES = ["STAGE", "CLEAR"];
 
@@ -814,11 +785,9 @@ export class Stage {
                 dy = canvas.height/2 * (1.0 - (t % 1.0));
             }
 
-            for (let i = 1; i >= 0; -- i) {
-
-                canvas.drawText(bmpFont, MESSAGES[0].charAt(j), dx + i, canvas.height/2-24 - dy + i)
-                    .drawText(bmpFont, MESSAGES[1].charAt(j), dx + i, canvas.height/2-2 + dy + i);
-            }
+            canvas.drawText(bmpFont, MESSAGES[0].charAt(j), dx, canvas.height/2-24 - dy)
+                  .drawText(bmpFont, MESSAGES[1].charAt(j), dx, canvas.height/2-2 + dy);
+            
         }
     }
 
@@ -828,11 +797,9 @@ export class Stage {
         canvas.setFillColor(0, 0, 0, 0.33)
               .fillRect();
 
-        for (let i = 1; i >= 0; -- i) {
-
-            canvas.drawText(bmpFont, "STAGE " + Number(this.stageIndex | 0), 
-                canvas.width/2 + i, canvas.height/2-16 + i, -14, 0, TextAlign.Center);
-        }
+        canvas.drawText(bmpFont, "STAGE " + Number(this.stageIndex | 0), 
+            canvas.width/2, canvas.height/2-16, -18, 0, TextAlign.Center);
+        
     }
 
 
@@ -928,20 +895,25 @@ export class Stage {
 
     public draw(canvas : Canvas) : void {
     
-        let bmpBase = canvas.getBitmap("base");
+        let bmpStaticTiles = canvas.getBitmap("staticTiles");
+        let bmpFigure = canvas.getBitmap("figure");
+        let bmpBat = canvas.getBitmap("bat");
         let bmpFontBig = canvas.getBitmap("fontBig");
-        if (bmpBase == null || bmpFontBig == null)
-            return;
 
-        this.drawNonTerrainStaticTiles(canvas, bmpBase);
-        this.drawTerrain(canvas, bmpBase);
+        if (bmpStaticTiles == undefined || bmpFigure == undefined || bmpFontBig == undefined) {
+
+            throw "Missing art files!";
+        }
+
+        this.drawNonTerrainStaticTiles(canvas, bmpStaticTiles);
+        this.drawTerrain(canvas, bmpStaticTiles);
 
         for (let r of this.rubble) {
 
-            r.draw(canvas, bmpBase);
+            r.draw(canvas, bmpStaticTiles);
         }
 
-        this.drawDynamicObjects(canvas, bmpBase);
+        this.drawDynamicObjects(canvas, bmpFigure);
 
         for (let s of this.stars) {
 
@@ -949,7 +921,7 @@ export class Stage {
         }
         for (let b of this.bats) {
 
-            b.draw(canvas, bmpBase);
+            b.draw(canvas, bmpBat);
         }
 
         this.snowfall.draw(canvas);
@@ -968,9 +940,14 @@ export class Stage {
     }
 
 
-    public changeStage(index : number, newMapdata : Array<number>) : void {
+    public changeStage(index : number, event : CoreEvent) : void {
 
-        this.baseTilemap = Array.from(newMapdata);
+        let map = event.assets.getTilemap(String(index));
+        if (map == undefined) {
+
+            throw "No level data for map index " + String(index);
+        }
+        this.baseTilemap = Array.from(map.cloneLayer(1) as number[]);
 
         this.states.length = 0;
         this.activeState = new PuzzleState(
