@@ -335,12 +335,12 @@ export class Stage {
 
             if (this.rubbleSpawned) {
 
-                event.audio.playSample(assets.getSample("rumble"), 0.60);
+                event.audio.playSample(assets.getSample("rumble"), 0.40);
             }
 
             if (this.boulderMoved) {
 
-                event.audio.playSample(assets.getSample("boulder"), 1.20);
+                event.audio.playSample(assets.getSample("boulder"), 0.60);
             }
         }
     }
@@ -468,7 +468,7 @@ export class Stage {
         if (this.cleared) {
 
             this.clearTimer = CLEAR_WAIT_TIME;
-            event.audio.playSample(assets.getSample("victory"), 0.80);
+            event.audio.playSample(assets.getSample("victory"), 0.60);
         }
         return somethingHappened;
     }
@@ -524,7 +524,7 @@ export class Stage {
 
                 if (!this.falling && this.boulderFalling) {
 
-                    event.audio.playSample(assets.getSample("boulder"), 1.20);
+                    event.audio.playSample(assets.getSample("boulder"), 0.60);
                     this.boulderFalling = false;
                 }
                 this.pushState();

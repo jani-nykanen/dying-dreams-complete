@@ -1,5 +1,5 @@
 import { Assets } from "../io/assets.js";
-import { AudioPlayer } from "../audio/audioplayer.js";
+import { AudioPlayer, AudioPlayerGeneral } from "../audio/audioplayer.js";
 import { Canvas } from "../renderer/canvas.js";
 import { Keyboard } from "./keyboard.js";
 import { Transition } from "./transition.js";
@@ -14,7 +14,7 @@ export class Core {
 
     private canvas : Canvas;
     private input : Input;
-    private audio : AudioPlayer;
+    private audio : AudioPlayerGeneral;
     private assets : Assets;
     private transition : Transition;
     private event : CoreEvent;
@@ -28,9 +28,9 @@ export class Core {
 
     constructor(canvasWidth : number, canvasHeight : number) {
 
-        this.assets = new Assets();
+        this.audio = new AudioPlayerGeneral();
+        this.assets = new Assets(this.audio);
         this.canvas = new Canvas(canvasWidth, canvasHeight, true, this.assets);
-        this.audio = new AudioPlayer();
         this.transition = new Transition();
         this.input = new Input();
 

@@ -1,99 +1,89 @@
 import { clamp } from "../common/math.js";
 
 
-export const enum Ramp {
-
-    Instant = 0,
-    Linear = 1,
-    Exponential = 2
-};
-
-
 export class Sample {
 
 
-    private readonly ctx : AudioContext;
-    private readonly gain : GainNode;
+    private data : AudioBuffer;
+    private activeBuffer : AudioBufferSourceNode | null = null;
+    private gain : GainNode;
 
-    // private oscillator : OscillatorNode | null = null;
-    private baseSequence : number[][];
-    private baseVolume : number;
-    private type : OscillatorType;
-    private ramp : Ramp;
-    private fadeVolumeFactor : number;
+    private startTime : number = 0.0;
+    private pauseTime : number = 0.0;
+    private playVol : number = 0.0;
+    private loop : boolean = false;
 
 
-    constructor(ctx : AudioContext, sequence : number[][], 
-        baseVolume = 1.0, type : OscillatorType = "square",
-        ramp = Ramp.Exponential, fadeVolumeFactor = 0.5) {
+    constructor(ctx : AudioContext, data : AudioBuffer) {
 
-        this.ctx = ctx;
+        this.data = data;
         this.gain = ctx.createGain();
-
-        this.baseSequence = sequence.map(s => Array.from(s));
-        this.baseVolume = baseVolume;
-        this.type = type;
-        this.ramp = ramp;
-        this.fadeVolumeFactor = fadeVolumeFactor;
     }
 
 
-    public play(volume : number) : void {
+    public play(ctx : AudioContext, vol = 1.0, loop = false, startTime = 0.0) : void {
 
-        let time = this.ctx.currentTime;
-        let timer = 0.0;
+        this.fadeIn(ctx, vol, vol, loop, startTime, 0);
+    }
 
-        let osc = this.ctx.createOscillator();
-        osc.type = this.type;
 
-        volume *= this.baseVolume;
+    public fadeIn(ctx : AudioContext, initial : number, end : number, 
+        loop = false, startTime = 0, fadeTime = 0) : void {
 
-        // Not working on Firefox, or after Closure, possibly because not
-        // part of es2020 standard
-        // this.gain.gain.cancelAndHoldAtTime(time);
-        try {
+        if (this.activeBuffer != null) {
 
-            if (typeof(this.gain.gain["cancelAndHoldAtTime"]) == "function") {
-
-                this.gain.gain["cancelAndHoldAtTime"](time);
-            }
+            this.activeBuffer.disconnect();
+            this.activeBuffer = null;
         }
-        catch (e) {}
 
-        osc.frequency.setValueAtTime(this.baseSequence[0][0], time);
-        this.gain.gain.setValueAtTime(clamp(volume, 0.01, 1.0), time);
+        let bufferSource = ctx.createBufferSource();
+        bufferSource.buffer = this.data;
+        bufferSource.loop = Boolean(loop);
 
-        timer = 0;
-        for (let s of this.baseSequence ) {
+        initial = clamp(initial, 0.0, 1.0);
+        end = clamp(end, 0.0, 1.0);
 
-            switch (this.ramp) {
-            
-            case Ramp.Instant:
-                osc.frequency.setValueAtTime(s[0], time + timer);
-                break;
+        this.gain.gain.setValueAtTime(initial, startTime);
 
-            case Ramp.Linear:
-                osc.frequency.linearRampToValueAtTime(s[0], time + timer);
-                break;
+        this.startTime = ctx.currentTime - startTime;
+        this.pauseTime = 0;
+        this.playVol = end;
+        this.loop = loop;
 
-            case Ramp.Exponential:
-                osc.frequency.exponentialRampToValueAtTime(s[0], time + timer);
-                break;
+        bufferSource.connect(this.gain).connect(ctx.destination);
+        bufferSource.start(0, startTime);
 
-            default:
-                break;
-            }
-            timer += 1.0/60.0 * s[1];
+        if (fadeTime > 0) {
+
+            this.gain.gain.exponentialRampToValueAtTime(end, startTime + fadeTime/1000.0);
         }
-        this.gain.gain.exponentialRampToValueAtTime(volume * this.fadeVolumeFactor, time + timer);
 
-        osc.connect(this.gain).connect(this.ctx.destination);
-        osc.start(time);
-        osc.stop(time + timer);
+        this.activeBuffer = bufferSource;
+    }
 
-        osc.onended = () => {
 
-            osc.disconnect()
-        }
+    public stop() : void {
+
+        if (this.activeBuffer == null) return;
+
+        this.activeBuffer.disconnect();
+        this.activeBuffer.stop(0);
+        this.activeBuffer = null;
+    }
+
+
+    public pause(ctx : AudioContext) : void {
+
+        if (this.activeBuffer == null) return;
+
+        this.pauseTime = ctx.currentTime - this.startTime;
+
+        this.stop();
+    }
+
+
+    public resume(ctx : AudioContext) : void {
+
+        this.play(ctx, this.playVol, this.loop, this.pauseTime);
     }
 }

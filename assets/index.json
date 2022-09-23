@@ -14,6 +14,17 @@
     "samplePath" : "assets/audio/",
     "samples" : [
 
+        {"name": "boulder", "path": "boulder.wav"},
+        {"name": "choose", "path": "choose.wav"},
+        {"name": "climb", "path": "climb.wav"},
+        {"name": "die", "path": "die.wav"},
+        {"name": "pause", "path": "pause.wav"},
+        {"name": "rumble", "path": "rumble.wav"},
+        {"name": "select", "path": "select.wav"},
+        {"name": "toggle1", "path": "toggle1.wav"},
+        {"name": "toggle2", "path": "toggle2.wav"},
+
+        {"name": "victory", "path": "victory.ogg"}
     ],
 
     "tilemapPath" : "assets/tilemaps/",

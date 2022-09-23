@@ -1,51 +1,86 @@
-import { CoreEvent } from "../core/event.js";
-import { Ramp, Sample } from "./sample.js";
+import { Sample } from "./sample.js";
 
 
 export class AudioPlayer {
 
 
-    private ctx : AudioContext;
+    protected ctx : AudioContext;
+    private musicTrack : Sample | null = null;
 
     private globalVolume : number;
-    private enabled : boolean;
-
-    private errorLogged = false;
+    private enabled : boolean = false;
 
 
     constructor(globalVolume = 1.0) {
 
         this.ctx = new AudioContext();
-
-        this.enabled = false;
         this.globalVolume = globalVolume;
     }
 
 
-    public createSample = (sequence : number[][], 
-        baseVolume = 1.0,
-        type : OscillatorType = "square",
-        ramp : Ramp = Ramp.Exponential,
-        fadeVolumeFactor : number = 0.5) : Sample => (new Sample(this.ctx, sequence, baseVolume, type, ramp, fadeVolumeFactor));
+    public playSample(sample : Sample | undefined, vol = 1.0) : void {
+
+        const EPS = 0.001;
+
+        if (!this.enabled || sample == undefined || this.globalVolume*vol <= EPS) return;
+
+        sample.play(this.ctx, this.globalVolume*vol, false, 0);
+    }
 
 
-    public playSample(s : Sample | undefined, volume = 1.0) : void {
+    public playMusic(sample : Sample | undefined, vol = 1.0) : void {
 
-        if (!this.enabled || s == undefined)
+        if (!this.enabled || sample == undefined) return;
+
+        this.fadeInMusic(sample, vol, 0.0);
+    }
+
+
+    public fadeInMusic(sample : Sample, vol = 1.0, fadeTime = 0.0) {
+
+        const EPS = 0.001;
+
+        if (!this.enabled || this.globalVolume <= EPS) return;
+
+        if (this.musicTrack != null) {
+
+            this.musicTrack.stop();
+            this.musicTrack = null;
+        }
+
+        let v = this.globalVolume*vol;
+        sample.fadeIn(this.ctx, fadeTime == null ? v : 0.01, v, true, 0, fadeTime);
+        this.musicTrack = sample;
+    }
+
+
+    public pauseMusic() : void {
+
+        if (!this.enabled || this.musicTrack == null)
             return;
 
-        try {
+        this.musicTrack.pause(this.ctx);
+    }
 
-            s.play(volume * this.globalVolume);
-        }
-        catch (e) {
 
-            if (!this.errorLogged) {
+    public resumeMusic() : boolean {
 
-                console.log("Audio error: " + e);
-                this.errorLogged = true;
-            }
-        }
+        if (!this.enabled || this.musicTrack == null)
+            return false;
+
+        this.musicTrack.resume(this.ctx);
+        
+        return true;
+    }
+
+
+    public stopMusic() : void {
+
+        if (!this.enabled || this.musicTrack == null)
+            return;
+
+        this.musicTrack.stop();
+        this.musicTrack = null;
     }
 
 
@@ -65,4 +100,19 @@ export class AudioPlayer {
 
 
     public getStateString = () : string => "AUDIO: " + ["OFF", "ON "][Number(this.enabled)]; 
+
+}
+
+
+// Only for passing the context to asset loader
+export class AudioPlayerGeneral extends AudioPlayer {
+
+
+    constructor(globalVolume = 1.0) {
+
+        super(globalVolume);
+    }
+
+    // For sample creation
+    public getContext = () : AudioContext => this.ctx;
 }

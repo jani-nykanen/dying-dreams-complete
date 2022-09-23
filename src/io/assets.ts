@@ -2,6 +2,7 @@ import { Bitmap } from "../renderer/bitmap.js";
 import { loadBitmapRGB222, RGB222LookupTable } from "../game/bitmapgen.js";
 import { Sample } from "../audio/sample.js";
 import { Tilemap } from "../common/tilemap.js";
+import { AudioPlayerGeneral } from "../audio/audioplayer.js";
 
 
 export class Assets {
@@ -15,33 +16,16 @@ export class Assets {
     private totalAssets : number = 0;
 
 
-    constructor() {
+    private readonly audioContext : AudioContext;
+
+
+    constructor(audio : AudioPlayerGeneral) {
 
         this.bitmaps = new Map<string, Bitmap> ();
         this.samples = new Map<string, Sample> ();
         this.tilemaps = new Map<string, Tilemap> ();
-    }
 
-
-    public addSample(name : string, s : Sample) : void {
-
-        this.samples.set(name, s);
-    }
-
-
-    public addBitmap(name : string, b : Bitmap) : void {
-
-        this.bitmaps.set(name, b);
-    }
-
-
-    public loadBitmapRGB222(name : string, path : string, lookup : RGB222LookupTable, palette : number[][]) : void {
-
-        ++ this.totalAssets;
-        this.addBitmap(name, loadBitmapRGB222(path, lookup, palette, () => {
-
-            ++ this.loaded;
-        }));
+        this.audioContext = audio.getContext();
     }
 
 
@@ -113,6 +97,29 @@ export class Assets {
     }
 
 
+    public loadSample(name : string, path : string) : void {
+
+        ++ this.totalAssets;
+
+        let xobj = new XMLHttpRequest();
+        xobj.open("GET", path, true);
+        xobj.responseType = "arraybuffer";
+
+        xobj.onload = () => {
+
+            if (xobj.readyState == 4 ) {
+                this.audioContext.decodeAudioData(xobj.response, (data) => {
+                    
+                    ++ this.loaded;
+                    this.samples.set(name, new Sample(this.audioContext, data));
+
+                });
+            }
+        }
+        xobj.send(null);
+    }
+
+
     public parseIndexFile(path : string) : void {
 
         this.loadTextFile(path, "json", (s : string) => {
@@ -126,6 +133,10 @@ export class Assets {
             this.loadItems(data, (name : string, path : string) => {
                 this.loadTilemap(name, path);
             }, "tilemapPath", "tilemaps");
+
+            this.loadItems(data, (name : string, path : string) => {
+                this.loadSample(name, path);
+            }, "samplePath", "samples");
         });
     }
 
