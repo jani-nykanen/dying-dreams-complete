@@ -1,14 +1,16 @@
+import { Vector2 } from "../common/vector.js";
 import { Assets } from "../io/assets.js";
 import { Bitmap } from "./bitmap.js";
-import { clamp } from "../common/math.js";
-
+import { Mesh } from "./mesh.js";
+import { Renderer, ShaderType } from "./renderer.js";
+import { Sprite } from "./sprite.js";
 
 export const enum Flip {
 
     None = 0,
     Horizontal = 1,
     Vertical = 2,
-    Both = 3
+    Both = 1 | 2
 };
 
 
@@ -20,131 +22,57 @@ export const enum TextAlign {
 };
 
 
-const createCanvasElement = (width : number, height : number, embedToDiv = true) : [HTMLCanvasElement, CanvasRenderingContext2D] => {
+export const enum SpecialRenderFlag {
 
-    let div : HTMLDivElement | null = null;
-    
-    if (embedToDiv) {
-
-        div = document.createElement("div");
-        div.setAttribute("style", "position: absolute; top: 0; left: 0; z-index: -1;");
-    }
-
-    let canvas = document.createElement("canvas");
-    canvas.setAttribute(
-        "style", 
-        "position: absolute; top: 0; left: 0; z-index: -1;" + 
-        "image-rendering: optimizeSpeed;" + 
-        "image-rendering: pixelated;" +
-        "image-rendering: -moz-crisp-edges;");
-
-    canvas.width = width;
-    canvas.height = height;
-
-    if (div != null) {
-
-        div.appendChild(canvas);
-        document.body.appendChild(div);
-    }
-
-    let ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-    ctx.imageSmoothingEnabled = false;
-
-    return [canvas, ctx];
-}
-
-
-export const getColorString = (r : number, g : number, b : number, a = 1.0) : string =>
-    "rgba(" + 
-        String(r | 0) + "," + 
-        String(g | 0) + "," + 
-        String(b | 0) + "," + 
-        String(clamp(a, 0.0, 1.0)) + 
-    ")";
+    None = 0,
+    FixedColorBitmap = 1
+};
 
 
 export class Canvas {
+    
+    
+    private readonly renderer : Renderer;
 
+    private transition : Vector2;
 
-    private canvas : HTMLCanvasElement;
-    private ctx : CanvasRenderingContext2D;
+    private specialRenderFlag : SpecialRenderFlag;
+
+    private framebuffer : Bitmap;
 
     private readonly assets : Assets;
 
-
-    public get width() {
-
-        return this.canvas.width;
-    }
-    public get height() {
-
-        return this.canvas.height;
-    }
+    public readonly width : number;
+    public readonly height : number;
 
 
-    constructor(width : number, height : number, isMainCanvas : boolean, assets : Assets) {
+    constructor(renderer : Renderer, width : number, height : number, assets : Assets) {
 
-        [this.canvas, this.ctx] = createCanvasElement(width, height, isMainCanvas);
+        this.renderer = renderer;
 
-        if (isMainCanvas) {
+        this.transition = new Vector2();
 
-            window.addEventListener("resize", () => this.resizeEvent(window.innerWidth, window.innerHeight));
-            this.resizeEvent(window.innerWidth, window.innerHeight);
-        }
+        this.specialRenderFlag = SpecialRenderFlag.None;
+
+        this.framebuffer = this.renderer.createFramebuffer(width, height);
+
         this.assets = assets;
-    }   
 
-
-    private resizeEvent(width : number, height : number) : void {
-
-        let m = Math.min(width / this.width, height / this.height);
-        if (m >= 1.0) {
-
-            m = Math.floor(m);
-        }
-
-        let style = this.canvas.style;
-
-        style.width  = String( (m*this.width) | 0) + "px";
-        style.height = String( (m*this.height) | 0) + "px";
-
-        style.left = String((width/2 - m*this.width/2) | 0) + "px";
-        style.top  = String((height/2 - m*this.height/2) | 0) + "px";
+        this.width = width;
+        this.height = height;
     }
 
 
-    public setFillColor(r = 255, g = r, b = g, a = 1.0) : Canvas {
-
-        this.ctx.fillStyle = getColorString(r, g, b, a);
-        return this;
-    }
-
-
-    public setAlpha(a = 1.0) : Canvas {
-
-        this.ctx.globalAlpha = clamp(a, 0.0, 1.0);
-        return this;
-    }
-
-
-    public fillRect(x = 0, y = 0, w = this.width, h = this.height) : Canvas {
-
-        this.ctx.fillRect(x | 0, y | 0, w | 0, h | 0);
-        return this;
-    }
-
-
-    public clear = (r = 255, g = r, b = g) : Canvas => this.setFillColor(r, g, b).fillRect();
-
-
-    public drawBitmapRegion(bmp : Bitmap | undefined, 
+    public drawScaledBitmapRegion(bmp : Bitmap | undefined, 
         sx : number, sy : number, sw : number, sh : number, 
-        dx : number, dy : number, flip = Flip.None) : Canvas {
+        dx : number, dy : number, dw : number, dh : number,
+        flip = Flip.None) : Canvas {
 
-        if (bmp == undefined || sw <= 0 || sh <= 0) 
+        if (bmp == undefined)
             return this;
 
-        let c = this.ctx;
+        dx += this.transition.x;
+        dy += this.transition.y;
 
         sx |= 0;
         sy |= 0;
@@ -153,74 +81,94 @@ export class Canvas {
 
         dx |= 0;
         dy |= 0;
+        dw |= 0;
+        dh |= 0;
 
-        flip = flip | Flip.None;
-        
-        if (flip != Flip.None) {
-            c.save();
+        if ((flip & Flip.Horizontal) == Flip.Horizontal) {
+
+            dx += dw;
+            dw *= -1;
         }
 
-        if ((flip & Flip.Horizontal) != 0) {
+        if ((flip & Flip.Vertical) == Flip.Vertical) {
 
-            c.translate(sw, 0);
-            c.scale(-1, 1);
-            dx *= -1;
-        }
-        if ((flip & Flip.Vertical) != 0) {
-
-            c.translate(0, sh);
-            c.scale(1, -1);
-            dy *= -1;
+            dy += dh;
+            dh *= -1;
         }
 
-        c.drawImage(bmp, sx, sy, sw, sh, dx, dy, sw, sh);
+        sx /= bmp.width;
+        sy /= bmp.height;
 
-        if (flip != Flip.None) {
+        sw /= bmp.width;
+        sh /= bmp.height;
 
-            c.restore();
+        if (this.specialRenderFlag == SpecialRenderFlag.FixedColorBitmap) {
+
+            this.renderer.changeShader(ShaderType.TexturedFixedColor);
         }
+        else {
+
+            this.renderer.changeShader(ShaderType.Textured);
+        }
+
+        this.renderer.setVertexTransform(dx, dy, dw, dh);
+        this.renderer.setFragmentTransform(sx, sy, sw, sh);
+
+        this.renderer.bindTexture(bmp);
+        this.renderer.bindMesh();
+        this.renderer.drawMesh();
 
         return this;
     }
 
 
-    public drawBitmap(bmp : Bitmap | undefined, dx = 0.0, dy = 0.0, flip = Flip.None) : Canvas {
+    public drawBitmapRegion(bmp : Bitmap | undefined, 
+        sx : number, sy : number, sw : number, sh : number, 
+        dx : number, dy : number, flip = Flip.None) : Canvas {
 
-        if (bmp == undefined)
-            return this;
-
-        return this.drawBitmapRegion(bmp, 0, 0, bmp.width, bmp.height, dx, dy, flip);
+        this.drawScaledBitmapRegion(bmp, sx, sy, sw, sh, dx, dy, sw, sh, flip);
+        return this;
     }
 
 
-    // Note: this method does not support flipping (reason: laziness, also 
-    // don't need it here)
-    public drawHorizontallyWavingBitmapRegion(bmp : Bitmap | undefined, 
-        sx : number, sy : number, sw : number, sh : number, 
-        dx : number, dy : number,
-        wave : number, period : number, amplitude : number) : Canvas {
+    public drawBitmap(bmp : Bitmap | undefined, dx : number, dy : number, flip = Flip.None) : Canvas {
 
         if (bmp == undefined)
             return this;
 
-        sx |= 0;
-        sy |= 0;
-        sw |= 0;
-        sh |= 0;
+        let sw = bmp.width;
+        let sh = bmp.height;
 
-        dx |= 0;
-        dy |= 0;    
+        this.drawScaledBitmapRegion(bmp, 0, 0, sw, sh, dx, dy, sw, sh, flip);
 
-        let w = 0.0;
-        let tx : number;
+        return this;
+    }
 
-        for (let y = 0; y < sh; ++ y) {
 
-            w = wave + period * y;
-            tx = dx + Math.round(Math.sin(w) * amplitude);
+    public drawScaledBitmap(bmp : Bitmap | undefined, 
+        dx : number, dy : number, dw : number, dh : number, 
+        flip = Flip.None) : Canvas {
 
-            this.ctx.drawImage(bmp, sx, sy + y, sw, 1, tx, dy + y, sw, 1);
-        }
+        if (bmp == undefined)
+            return this;
+
+        let sw = bmp.width;
+        let sh = bmp.height;
+
+        this.drawScaledBitmapRegion(bmp, 0, 0, sw, sh, dx, dy, dw, dh, flip);
+
+        return this;
+    }
+
+
+    public fillRect(x = 0, y = 0, w = this.width, h = this.height) : Canvas {
+
+        this.renderer.changeShader(ShaderType.NoTexture);
+
+        this.renderer.setVertexTransform(x, y, w, h);
+        this.renderer.bindMesh();
+        this.renderer.drawMesh();
+
         return this;
     }
 
@@ -241,7 +189,7 @@ export class Canvas {
 
         if (align == TextAlign.Center) {
 
-            dx -= ( (str.length) * (cw + xoff)) / 2.0 ;
+            dx -= ((str.length+1) * (cw + xoff)) / 2.0 ;
             x = dx;
         }
         else if (align == TextAlign.Right) {
@@ -268,6 +216,62 @@ export class Canvas {
                 x, y);
 
             x += cw + xoff;
+        }
+
+        return this;
+    }
+
+
+    public drawSprite(spr : Sprite, bmp : Bitmap | undefined, 
+        dx : number, dy : number, flip = Flip.None) : Canvas {
+
+        spr.draw(this, bmp, dx, dy, flip);
+        return this;
+    }
+
+
+    public drawSpriteFrame(spr : Sprite, 
+        bmp : Bitmap | undefined, 
+        column : number, row : number, 
+        dx : number, dy : number, flip = Flip.None) : Canvas {
+
+        spr.drawFrame(this, bmp, column, row, dx, dy, flip);
+        return this;
+    }
+
+
+    // Basically the same as fillRect with setColor, but does 
+    // not required to reset the color after called
+    public clear(r = 255, g = r, b = g) : Canvas {
+
+        this.renderer.changeShader(ShaderType.NoTexture);
+        this.renderer.setVertexTransform(0, 0, this.width, this.height);
+
+        this.renderer.setColor(r / 255, g / 255, b / 255, 1.0, false);
+        this.renderer.bindMesh();
+        this.renderer.drawMesh();
+        this.renderer.resetColor();
+
+        return this;
+    }
+
+
+    public fillRegularStar(cx : number, cy : number, radius : number) : Canvas {
+
+        let leftx = Math.round(Math.sin(-Math.PI*2/3) * radius);
+        let bottomy = -Math.round(Math.cos(-Math.PI*2/3) * radius);
+
+        let x = 0;
+        let stepx = bottomy / Math.abs(leftx);
+
+        let rx : number;
+
+        for (let y = -radius; y <= bottomy; ++ y, x += stepx) {
+
+            rx = Math.round(x);
+
+            this.fillRect(cx - rx, cy + y, rx*2, 1);
+            this.fillRect(cx - rx, cy + radius - bottomy*2 - y,  rx*2, 1);
         }
 
         return this;
@@ -335,31 +339,133 @@ export class Canvas {
     }
 
 
-    public fillRegularStar(cx : number, cy : number, radius : number) : Canvas {
+    // Note: this method does not support flipping (reason: laziness, also 
+    // don't need it here)
+    public drawHorizontallyWavingBitmapRegion(bmp : Bitmap | undefined, 
+        sx : number, sy : number, sw : number, sh : number, 
+        dx : number, dy : number,
+        wave : number, period : number, amplitude : number) : Canvas {
 
-        let leftx = Math.round(Math.sin(-Math.PI*2/3) * radius);
-        let bottomy = -Math.round(Math.cos(-Math.PI*2/3) * radius);
+        if (bmp == undefined)
+            return this;
 
-        let x = 0;
-        let stepx = bottomy / Math.abs(leftx);
+        sx |= 0;
+        sy |= 0;
+        sw |= 0;
+        sh |= 0;
 
-        let rx : number;
+        dx |= 0;
+        dy |= 0;    
 
-        for (let y = -radius; y <= bottomy; ++ y, x += stepx) {
+        let w = 0.0;
+        let tx : number;
 
-            rx = Math.round(x);
+        for (let y = 0; y < sh; ++ y) {
 
-            this.fillRect(cx - rx, cy + y, rx*2, 1);
-            this.fillRect(cx - rx, cy + radius - bottomy*2 - y,  rx*2, 1);
+            w = wave + period * y;
+            tx = dx + Math.round(Math.sin(w) * amplitude);
+
+            this.drawBitmapRegion(bmp, 
+                sx, sy + y, sw, 1, 
+                tx, dy + y);
         }
+        return this;
+    }
+
+
+    public move(x : number, y : number) : Canvas {
+
+        this.transition.x += x;
+        this.transition.y += y;
 
         return this;
     }
 
 
-    // Looks silly, but it is here for abstraction
-    public convertToBitmap = () : Bitmap => this.canvas;
+    public moveTo(x = 0, y = 0) : Canvas {
+
+        this.transition.x = x;
+        this.transition.y = y;
+
+        return this;
+    }
 
 
-    public getBitmap = (name : string) : Bitmap | undefined => this.assets.getBitmap(name); 
+    public setColor(r = 255, g = r, b = g, a = 1.0) : Canvas {
+
+        this.renderer.setColor(r / 255, g / 255, b / 255, a);
+        return this;
+    }
+
+
+    public reset() : void {
+
+        this.renderer.transform
+            .setView(this.width, this.height)
+            .loadIdentity()
+            .use();
+        this.renderer.setColor();
+        this.renderer.resetVertexAndFragmentTransforms();
+        this.renderer.transform.clearStacks();
+        
+        this.moveTo();
+    }
+
+
+    public setSpecialRenderFlag(flag = SpecialRenderFlag.None) : void {
+
+        this.specialRenderFlag = flag;
+    }
+
+
+    public renderToScreen() : void {
+
+        // No clue why it requires reversing
+        this.renderer.clear(0.0);
+        this.renderer.transform
+            .loadIdentity()
+            .translate(0, this.renderer.height)
+            .scale(1, -1)
+            .setView(this.renderer.width, this.renderer.height)
+            .use();
+
+        let m = Math.min(
+            this.renderer.width / this.width, 
+            this.renderer.height / this.height);
+        if (m >= 1.0) {
+
+            m = Math.floor(m);
+        }
+
+        let w = this.width*m;
+        let h = this.height*m;
+        let x = this.renderer.width/2 - w/2;
+        let y = this.renderer.height/2 - h/2;
+        
+        this.renderer.setColor();
+        this.renderer.changeShader(ShaderType.Textured);
+        this.renderer.setVertexTransform(x, y, w, h);
+        this.renderer.setFragmentTransform();
+        this.renderer.bindTexture(this.framebuffer);
+        this.renderer.drawMesh();
+    }
+
+
+    public drawTo(func : (canvas : Canvas) => void) {
+
+        this.framebuffer.drawTo((gl : WebGLRenderingContext) => {
+
+            gl.viewport(0, 0, this.width, this.height);
+
+            this.renderer.transform.loadIdentity()
+                .setView(this.width, this.height)
+                .use();
+            func(this);
+
+            gl.viewport(0, 0, this.renderer.width, this.renderer.height);
+        });
+    }
+
+
+    public getBitmap = (name : string) : Bitmap | undefined => this.assets.getBitmap(name);
 }

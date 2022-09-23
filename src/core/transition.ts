@@ -83,7 +83,7 @@ export class Transition {
 
                 t = Math.round(t * this.param) / this.param;
             }
-            canvas.setFillColor(0, 0, 0, t)
+            canvas.setColor(0, 0, 0, t)
                   .fillRect(0, 0, canvas.width, canvas.height);
             break;
 
@@ -97,7 +97,7 @@ export class Transition {
             );
 
             radius = (1 - t) * maxRadius;
-            canvas.setFillColor(0)
+            canvas.setColor(0)
                   .fillCircleOutside(radius);
 
             break;

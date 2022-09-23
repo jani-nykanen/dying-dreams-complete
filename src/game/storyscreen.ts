@@ -147,7 +147,7 @@ export class StoryScreen implements Scene {
         let rectY = Math.round(Math.sin(this.rectTimer)) * 2;
         if (this.ready) {
 
-            canvas.setFillColor(255)
+            canvas.setColor(255)
                   .fillRect(dx + this.maxLength * (8 + XOFF) + 4, 
                   dy + this.height * (8 + YOFF) + 4 + rectY, 6, 6);
         }

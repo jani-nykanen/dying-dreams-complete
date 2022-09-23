@@ -7,7 +7,7 @@ import { Bat, nextParticle, RubbleParticle, StarParticle } from "./particle.js";
 import { Direction, PuzzleState } from "./puzzlestate.js";
 import { Snowfall } from "./snowfall.js";
 import { COLUMN_COUNT, createTerrainMap } from "./terrainmap.js";
-import { RGBA } from "../common/vector.js";
+import { RGBA } from "../common/rgba.js";
 
 
 const SOLID_TILES = [1, 3, 8, 9, 13];
@@ -549,8 +549,9 @@ export class Stage {
 
                 if (tid == 0) {
 
-                    canvas.setFillColor(255, 170, 85)
-                          .fillRect(x*8, y*8, 8, 8);
+                    canvas.setColor(255, 170, 85)
+                          .fillRect(x*8, y*8, 8, 8)
+                          .setColor();
                 }
                 else {
                     
@@ -576,13 +577,14 @@ export class Stage {
 
         dy += YOFF;
         
-        canvas.setFillColor(170, 255, 255);
+        canvas.setColor(170, 255, 255);
         for (let x = 0; x < 16; ++ x) {
 
             wave = Math.round(Math.sin(baseWave + (Math.PI*2) / 16 * x) * AMPLITUDE * Math.sin(Math.PI / 16 * x));
 
             canvas.fillRect(dx + x, dy + wave, 1, 16 - (wave + YOFF));
         }
+        canvas.setColor();
     }
 
 
@@ -798,12 +800,11 @@ export class Stage {
 
     private drawStageStart(canvas : Canvas, bmpFont : Bitmap) : void {
 
-        canvas.setFillColor(0, 0, 0, 0.33)
-              .fillRect();
-
-        canvas.drawText(bmpFont, "STAGE " + Number(this.stageIndex | 0), 
-            canvas.width/2, canvas.height/2-16, -18, 0, TextAlign.Center);
-        
+        canvas.setColor(0, 0, 0, 0.33)
+              .fillRect()
+              .setColor()
+              .drawText(bmpFont, "STAGE " + Number(this.stageIndex | 0), 
+                    canvas.width/2, canvas.height/2-16, -18, 0, TextAlign.Center);
     }
 
 
@@ -932,8 +933,9 @@ export class Stage {
 
         if (this.cleared) {
 
-            canvas.setFillColor(0, 0, 0, 0.33)
-                  .fillRect();
+            canvas.setColor(0, 0, 0, 0.33)
+                  .fillRect()
+                  .setColor();
             this.drawStageClearText(canvas, bmpFontBig);
         }
         

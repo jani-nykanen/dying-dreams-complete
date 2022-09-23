@@ -1,7 +1,8 @@
 import { Canvas } from "../renderer/canvas.js";
 import { Bitmap } from "../renderer/bitmap";
 import { CoreEvent } from "../core/event.js";
-import { RGBA, Vector2 } from "../common/vector.js";
+import { Vector2 } from "../common/vector.js";
+import { RGBA } from "../common/rgba.js";
 
 
 
@@ -140,8 +141,9 @@ export class StarParticle extends Particle {
 
         let r = Math.round(MIN_R + Math.sin(this.waveTimer) * VARY_R);
 
-        canvas.setFillColor(this.color.r, this.color.g, this.color.b, this.color.a)
-            .fillRegularStar(px, py, r);
+        canvas.setColor(this.color.r, this.color.g, this.color.b, this.color.a)
+              .fillRegularStar(px, py, r)
+              .setColor();
     }
 
 

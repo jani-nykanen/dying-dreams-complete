@@ -1,8 +1,8 @@
 import { Bitmap } from "../renderer/bitmap.js";
-import { loadBitmapRGB222, RGB222LookupTable } from "../game/bitmapgen.js";
 import { Sample } from "../audio/sample.js";
 import { Tilemap } from "../common/tilemap.js";
 import { AudioPlayerGeneral } from "../audio/audioplayer.js";
+import { Renderer } from "../renderer/renderer.js";
 
 
 export class Assets {
@@ -15,17 +15,18 @@ export class Assets {
     private loaded : number = 0;
     private totalAssets : number = 0;
 
-
     private readonly audioContext : AudioContext;
+    private readonly renderer : Renderer;
 
 
-    constructor(audio : AudioPlayerGeneral) {
+    constructor(audio : AudioPlayerGeneral, renderer : Renderer) {
 
         this.bitmaps = new Map<string, Bitmap> ();
         this.samples = new Map<string, Sample> ();
         this.tilemaps = new Map<string, Tilemap> ();
 
         this.audioContext = audio.getContext();
+        this.renderer = renderer;
     }
 
 
@@ -79,7 +80,7 @@ export class Assets {
         image.onload = (_ : Event) => {
 
             ++ this.loaded;
-            this.bitmaps.set(name, image);
+            this.bitmaps.set(name, this.renderer.createBitmap(image));
         }
         image.src = path;
     }

@@ -116,11 +116,12 @@ export class Menu {
 
         if (box) {
 
-            canvas.setFillColor(0, 0, 0, 0.67);
-            canvas.fillRect(dx - BOX_OFFSET, dy - BOX_OFFSET,
+            canvas.setColor(0, 0, 0, 0.67)
+                  .fillRect(dx - BOX_OFFSET, dy - BOX_OFFSET,
                         w + BOX_OFFSET*2, h + BOX_OFFSET*2);
         }
 
+        canvas.setColor();
         for (let i = 0; i < this.buttons.length; ++ i) {
 
             font = canvas.getBitmap(i == this.cursorPos ? "fontYellow" : "font")

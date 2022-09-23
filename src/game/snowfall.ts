@@ -59,7 +59,7 @@ class Snowflake extends Particle {
         let px = Math.round(this.pos.x - this.size/2) + dx;
         let py = Math.round(this.pos.y - this.size/2) + dy;
 
-        canvas.setFillColor(255, 255, 255, ALPHA)
+        canvas.setColor(255, 255, 255, ALPHA)
               .fillRect(px, py, this.size, this.size);
     }
 

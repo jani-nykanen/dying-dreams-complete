@@ -1,11 +1,11 @@
 import { Assets } from "../io/assets.js";
-import { AudioPlayer, AudioPlayerGeneral } from "../audio/audioplayer.js";
+import { AudioPlayerGeneral } from "../audio/audioplayer.js";
 import { Canvas } from "../renderer/canvas.js";
-import { Keyboard } from "./keyboard.js";
 import { Transition } from "./transition.js";
 import { CoreEvent } from "./event.js";
 import { Scene, SceneParam } from "./scene.js";
 import { Input } from "./input.js";
+import { Renderer } from "../renderer/renderer.js";
 
 
 
@@ -17,6 +17,7 @@ export class Core {
     private audio : AudioPlayerGeneral;
     private assets : Assets;
     private transition : Transition;
+    private renderer : Renderer;
     private event : CoreEvent;
 
     private scenes : Map<string, Scene>;
@@ -28,9 +29,10 @@ export class Core {
 
     constructor(canvasWidth : number, canvasHeight : number) {
 
+        this.renderer = new Renderer();
         this.audio = new AudioPlayerGeneral();
-        this.assets = new Assets(this.audio);
-        this.canvas = new Canvas(canvasWidth, canvasHeight, true, this.assets);
+        this.assets = new Assets(this.audio, this.renderer);
+        this.canvas = new Canvas(this.renderer, canvasWidth, canvasHeight, this.assets);
         this.transition = new Transition();
         this.input = new Input();
 
@@ -69,17 +71,23 @@ export class Core {
             this.timeSum -= FRAME_WAIT;
         }
 
-        if (!this.assets.hasLoaded()) {
+        this.canvas.drawTo((canvas : Canvas) => {
 
-            this.canvas.clear(0);
-        }
-        else {
+            if (!this.assets.hasLoaded()) {
 
-            if (this.activeScene != undefined)
-                this.activeScene.redraw(this.canvas);
+                canvas.clear(0);
+                // TODO: Loading screen!
+            }
+            else {
 
-            this.transition.draw(this.canvas);
-        }
+                if (this.activeScene != undefined)
+                    this.activeScene.redraw(canvas);
+
+                this.transition.draw(canvas);
+            }
+
+        });
+        this.canvas.renderToScreen();
 
         window.requestAnimationFrame(ts => this.loop(ts));
     }

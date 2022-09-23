@@ -177,15 +177,17 @@ export class Game implements Scene {
 
         if (this.pauseMenu.isActive()) {
 
-            canvas.setFillColor(0, 0, 0, 0.33)
-                  .fillRect();
+            canvas.setColor(0, 0, 0, 0.33)
+                  .fillRect()
+                  .setColor();
             this.pauseMenu.draw(canvas);
         }
 
         if (this.stageIndex <= HINTS.length) {
 
-            canvas.setFillColor(0, 0, 0, 0.33)
-                  .fillRect(0, 0, canvas.width, 10);
+            canvas.setColor(0, 0, 0, 0.33)
+                  .fillRect(0, 0, canvas.width, 10)
+                  .setColor();
             for (let i = 0; i < 2; ++ i) {
 
                 canvas.drawText(canvas.getBitmap("font"), HINTS[this.stageIndex-1], 

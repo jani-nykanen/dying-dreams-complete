@@ -177,8 +177,9 @@ export class TitleScreen implements Scene {
     public redraw(canvas : Canvas) : void {
 
         canvas.drawBitmap(canvas.getBitmap("background"), 0, -8)
-              .setFillColor(0, 0, 0, 0.33)
-              .fillRect();
+              .setColor(0, 0, 0, 0.33)
+              .fillRect()
+              .setColor();
 
         this.drawBats(canvas);
               
