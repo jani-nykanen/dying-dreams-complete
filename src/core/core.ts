@@ -5,6 +5,7 @@ import { Keyboard } from "./keyboard.js";
 import { Transition } from "./transition.js";
 import { CoreEvent } from "./event.js";
 import { Scene, SceneParam } from "./scene.js";
+import { Input } from "./input.js";
 
 
 
@@ -12,7 +13,7 @@ export class Core {
 
 
     private canvas : Canvas;
-    private keyboard : Keyboard;
+    private input : Input;
     private audio : AudioPlayer;
     private assets : Assets;
     private transition : Transition;
@@ -29,12 +30,12 @@ export class Core {
 
         this.assets = new Assets();
         this.canvas = new Canvas(canvasWidth, canvasHeight, true, this.assets);
-        this.keyboard = new Keyboard();
         this.audio = new AudioPlayer();
         this.transition = new Transition();
+        this.input = new Input();
 
         this.event = new CoreEvent(
-            this.keyboard, this.audio, 
+            this.input, this.audio, 
             this.canvas, this.transition, 
             this.assets, this);
 
@@ -54,13 +55,15 @@ export class Core {
         let refreshCount = (this.timeSum / FRAME_WAIT) | 0;
         while ((refreshCount --) > 0) {
 
+            this.input.updateStick();
+
             if (this.activeScene != undefined &&
                 this.assets.hasLoaded()) {
 
                 this.activeScene.update(this.event);
             }
 
-            this.keyboard.update();
+            this.input.update();
             this.transition.update(this.event);
 
             this.timeSum -= FRAME_WAIT;

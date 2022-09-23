@@ -5,12 +5,13 @@ import { Keyboard } from "./keyboard.js";
 import { Transition } from "./transition.js";
 import { Core } from "./core.js";
 import { SceneParam } from "./scene.js";
+import { Input } from "./input.js";
 
 
 export class CoreEvent {
 
 
-    public readonly keyboard : Keyboard;
+    public readonly input : Input;
     public readonly audio : AudioPlayer;
     public readonly transition : Transition;
     public readonly assets : Assets;
@@ -21,10 +22,10 @@ export class CoreEvent {
     private readonly core : Core;
 
 
-    constructor(keyboard : Keyboard, audio : AudioPlayer, canvas : Canvas, 
+    constructor(input : Input, audio : AudioPlayer, canvas : Canvas, 
         transition : Transition, assets : Assets, core : Core) {
 
-        this.keyboard = keyboard;
+        this.input = input;
         this.audio = audio;
         this.canvas = canvas;
         this.transition = transition;

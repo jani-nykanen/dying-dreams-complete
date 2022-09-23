@@ -21,6 +21,16 @@ export class Vector2 {
 
 
     public clone = () : Vector2 => new Vector2(this.x, this.y);
+
+
+    public zeros() : void {
+
+        this.x = 0;
+        this.y = 0;
+    }
+
+
+    public length = () : number => Math.hypot(this.x, this.y);
 }
 
 

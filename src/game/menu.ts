@@ -1,7 +1,7 @@
 import { Canvas } from "../renderer/canvas.js";
 import { Bitmap } from "../renderer/bitmap.js";
 import { CoreEvent } from "../core/event.js";
-import { KeyState } from "../core/keyboard.js";
+import { InputState } from "../core/inputstate.js";
 import { negMod } from "../common/math.js";
 
 
@@ -69,11 +69,11 @@ export class Menu {
 
         let oldPos = this.cursorPos;
 
-        if (event.keyboard.getActionState("up") == KeyState.Pressed) {
+        if (event.input.upPress()) {
 
             -- this.cursorPos;
         }
-        else if (event.keyboard.getActionState("down") == KeyState.Pressed) {
+        else if (event.input.downPress()) {
 
             ++ this.cursorPos;
         }
@@ -88,8 +88,8 @@ export class Menu {
         let activeButton = this.buttons[this.cursorPos];
         
         if (activeButton != null && (
-            event.keyboard.getActionState("select") == KeyState.Pressed ||
-            event.keyboard.getActionState("start") == KeyState.Pressed)) {
+            event.input.getAction("select") == InputState.Pressed ||
+            event.input.getAction("start") == InputState.Pressed)) {
 
             activeButton.evaluateCallback(event);
             

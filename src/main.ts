@@ -72,15 +72,11 @@ window.onload = () => (new Core(160, 144))
 
             event.assets.parseIndexFile("assets/index.json");
 
-            event.keyboard
-                .addAction("right", "ArrowRight", "KeyD")
-                .addAction("up", "ArrowUp", "KeyW")
-                .addAction("left", "ArrowLeft", "KeyA")
-                .addAction("down", "ArrowDown", "KeyS")
-                .addAction("undo", "Backspace", "KeyZ")
-                .addAction("restart", "KeyR")
-                .addAction("start", "Enter")
-                .addAction("pause", "Enter")
-                .addAction("select", "Space");  
+            event.input
+                .addAction("undo", "Backspace", "KeyZ", 1)
+                .addAction("restart", "KeyR", null, 3)
+                .addAction("start", "Enter", null, 9, 7)
+                .addAction("pause", "Enter", null, 9, 7)
+                .addAction("select", "Space", null, 0);  
             event.audio.setGlobalVolume(0.50);
         });

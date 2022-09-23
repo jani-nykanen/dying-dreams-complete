@@ -27,7 +27,7 @@ export class StartIntro implements Scene {
 
 
         if ((this.timer += event.step) >= PHASE_TIME ||
-            event.keyboard.isAnyPressed()) {
+            event.input.anyPressed()) {
 
             this.timer = 0;
 

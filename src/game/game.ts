@@ -1,5 +1,5 @@
 import { Canvas } from "../renderer/canvas.js";
-import { KeyState } from "../core/keyboard.js";
+import { InputState } from "../core/inputstate.js";
 import { Menu, MenuButton } from "./menu.js";
 import { Stage } from "./stage.js";
 import { TransitionType } from "../core/transition.js";
@@ -125,7 +125,7 @@ export class Game implements Scene {
             return;
         }
         else if (this.stage.canBeInterrupted() &&
-            event.keyboard.getActionState("pause") == KeyState.Pressed) {
+            event.input.getAction("pause") == InputState.Pressed) {
 
             event.audio.playSample(event.assets.getSample("pause"), 0.60);
             this.pauseMenu.activate(0);

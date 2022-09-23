@@ -70,7 +70,7 @@ export class StoryScreen implements Scene {
         this.ready = this.charIndex >= STORY[this.phase][this.textIndex].length;
         if (!this.ready) {
 
-            if (event.keyboard.isAnyPressed()) {
+            if (event.input.anyPressed()) {
 
                 this.charIndex = STORY[this.phase][this.textIndex].length;
                 this.ready = true;
@@ -84,7 +84,7 @@ export class StoryScreen implements Scene {
         }
         else {
 
-            if (event.keyboard.isAnyPressed()) {
+            if (event.input.anyPressed()) {
 
                 if (++ this.textIndex == STORY[this.phase].length) {
 

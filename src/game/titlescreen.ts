@@ -1,6 +1,5 @@
 import { Canvas, TextAlign } from "../renderer/canvas.js";
-import { KeyState } from "../core/keyboard.js";
-import { clamp } from "../common/math.js";
+import { InputState } from "../core/inputstate.js";
 import { Menu, MenuButton } from "./menu.js";
 import { TransitionType } from "../core/transition.js";
 import { Scene, SceneParam } from "../core/scene.js";
@@ -159,8 +158,8 @@ export class TitleScreen implements Scene {
 
         if (this.phase == 0) {
 
-            if (event.keyboard.getActionState("start") == KeyState.Pressed ||
-                event.keyboard.getActionState("select") == KeyState.Pressed) {
+            if (event.input.getAction("start") == InputState.Pressed ||
+                event.input.getAction("select") == InputState.Pressed) {
 
                 event.audio.playSample(event.assets.getSample("pause"), 0.60);
                 ++ this.phase;

@@ -1,21 +1,10 @@
-
-
-export const enum KeyState {
-
-    Up = 0,
-    Down = 1,
-    Released = 2,
-    Pressed = 3,
-
-    DownOrPressed = 1
-};
-
+import { InputState } from "./inputstate.js";
 
 
 export class Keyboard {
 
 
-    private states : Map<string, KeyState>;
+    private states : Map<string, InputState>;
     private prevent : Array<string>;
     private actions : Map<string, [string, string | undefined]>;
 
@@ -24,7 +13,7 @@ export class Keyboard {
 
     constructor() {
 
-        this.states = new Map<string, KeyState> ();
+        this.states = new Map<string, InputState> ();
         this.prevent = new Array<string> ();
         this.actions = new Map<string, [string, string | undefined]> ();
 
@@ -41,11 +30,6 @@ export class Keyboard {
             if (this.prevent.includes(e.code))
                 e.preventDefault();
         });  
-
-
-        window.addEventListener("contextmenu", (e : MouseEvent) => e.preventDefault());
-        window.addEventListener("mousemove",   (_ : MouseEvent) => window.focus());
-        window.addEventListener("mousedown",   (_ : MouseEvent) => window.focus());
     }
 
 
@@ -53,16 +37,16 @@ export class Keyboard {
 
         if (down) {
 
-            if (this.states.get(key) === KeyState.Down)
+            if (this.states.get(key) === InputState.Down)
                 return;
-            this.states.set(key, KeyState.Pressed);
+            this.states.set(key, InputState.Pressed);
             this.anyPressed = true;
             return;
         }
 
-        if (this.states.get(key) === KeyState.Up)
+        if (this.states.get(key) === InputState.Up)
             return;
-        this.states.set(key, KeyState.Released);
+        this.states.set(key, InputState.Released);
     }
 
 
@@ -70,10 +54,10 @@ export class Keyboard {
 
         for (let k of this.states.keys()) {
 
-            if (this.states.get(k) === KeyState.Pressed)
-                this.states.set(k, KeyState.Down);
-            else if (this.states.get(k) === KeyState.Released)
-                this.states.set(k, KeyState.Up);
+            if (this.states.get(k) === InputState.Pressed)
+                this.states.set(k, InputState.Down);
+            else if (this.states.get(k) === InputState.Released)
+                this.states.set(k, InputState.Up);
         }
 
         this.anyPressed = false;
@@ -91,24 +75,24 @@ export class Keyboard {
     }
 
 
-    public getState(name : string) : KeyState {
+    public getState(name : string) : InputState {
 
         let state = this.states.get(name);
         if (state == undefined)
-            return KeyState.Up;
+            return InputState.Up;
 
         return state;
     }
 
 
-    public getActionState(name : string) : KeyState {
+    public getActionState(name : string) : InputState {
 
         let a = this.actions.get(name);
         if (a === undefined)
-            return KeyState.Up;
+            return InputState.Up;
 
         let state = this.getState(a[0]);
-        if (state == KeyState.Up && a[1] !== undefined) {
+        if (state == InputState.Up && a[1] !== undefined) {
 
             return this.getState(a[1]);
         }
@@ -117,5 +101,11 @@ export class Keyboard {
 
 
     public isAnyPressed = () : boolean => this.anyPressed;
+
+
+    public preventKey(key : string) : void {
+
+        this.prevent.push(key);
+    } 
     
 }

@@ -2,7 +2,7 @@ import { Assets } from "../io/assets.js";
 import { Canvas, Flip, TextAlign } from "../renderer/canvas.js";
 import { Bitmap } from "../renderer/bitmap.js";
 import { CoreEvent } from "../core/event.js";
-import { KeyState } from "../core/keyboard.js";
+import { InputState } from "../core/inputstate.js";
 import { Bat, nextParticle, RubbleParticle, StarParticle } from "./particle.js";
 import { Direction, PuzzleState } from "./puzzlestate.js";
 import { Snowfall } from "./snowfall.js";
@@ -293,24 +293,28 @@ export class Stage {
 
     private control(assets : Assets, event : CoreEvent) : void {
 
+        const EPS = 0.25;
+
         if (this.moving)
             return;
 
         let dir = Direction.None;
+        let stick = event.input.getStick();
+        let horizontal = Math.abs(stick.x) > Math.abs(stick.y);
 
-        if ((event.keyboard.getActionState("right") & KeyState.DownOrPressed) == 1) {
+        if (horizontal && stick.x > EPS) {
 
             dir = Direction.Right;
         }
-        else if ((event.keyboard.getActionState("up") & KeyState.DownOrPressed) == 1) {
+        else if (!horizontal && stick.y < -EPS) {
 
             dir = Direction.Up;
         }
-        else if ((event.keyboard.getActionState("left") & KeyState.DownOrPressed) == 1) {
+        else if (horizontal && stick.x < -EPS) {
 
             dir = Direction.Left;
         }
-        else if ((event.keyboard.getActionState("down") & KeyState.DownOrPressed) == 1) {
+        else if (!horizontal && stick.y > EPS) {
 
             dir = Direction.Down;
         }
@@ -847,12 +851,12 @@ export class Stage {
 
                 this.control(assets, event);
 
-                if (event.keyboard.getActionState("undo") == KeyState.Pressed) {
+                if (event.input.getAction("undo") == InputState.Pressed) {
 
                     event.audio.playSample(assets.getSample("choose"), 0.60);
                     this.undo();
                 }
-                else if (event.keyboard.getActionState("restart") == KeyState.Pressed) {
+                else if (event.input.getAction("restart") == InputState.Pressed) {
 
                     event.audio.playSample(assets.getSample("choose"), 0.60);
                     this.restart();
