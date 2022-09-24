@@ -8,7 +8,7 @@ import { CoreEvent } from "./core/event.js";
 
 
 
-window.onload = () => (new Core(160, 144))
+window.onload = () => (new Core(800, 720))
         .addScene("game", new Game())
         .addScene("titlescreen", new TitleScreen())
         .addScene("story", new StoryScreen())

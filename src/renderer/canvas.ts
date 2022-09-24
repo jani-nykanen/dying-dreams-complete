@@ -54,7 +54,7 @@ export class Canvas {
 
         this.specialRenderFlag = SpecialRenderFlag.None;
 
-        this.framebuffer = this.renderer.createFramebuffer(width, height);
+        this.framebuffer = this.renderer.createFramebuffer(width, height, true);
 
         this.assets = assets;
 
@@ -418,7 +418,7 @@ export class Canvas {
     }
 
 
-    public renderToScreen() : void {
+    public renderToScreen(preserveSquarePixels = false) : void {
 
         // No clue why it requires reversing
         this.renderer.clear(0.0);
@@ -432,7 +432,7 @@ export class Canvas {
         let m = Math.min(
             this.renderer.width / this.width, 
             this.renderer.height / this.height);
-        if (m >= 1.0) {
+        if (preserveSquarePixels && m >= 1.0) {
 
             m = Math.floor(m);
         }

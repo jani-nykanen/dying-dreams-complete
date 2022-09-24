@@ -74,19 +74,15 @@ export class Game implements Scene {
         let bmp = canvas.getBitmap("background");
         if (bmp == undefined)
             return;
-
+/*
         let offy = 4; // Math.abs(canvas.height - bmp.height) / 2;
 
         let amplitude = offy;
         let perioud = Math.PI*4 / bmp.width;
 
         let dy : number;
-
-        for (let dx = 0; dx < bmp.width; ++ dx) {
-
-            dy = Math.round(Math.sin(this.backgroundTimer + perioud*dx) * amplitude);
-            canvas.drawBitmapRegion(bmp, dx, dy + offy, 1, canvas.height, dx, 0);
-        }
+*/
+        canvas.drawBitmap(bmp, 0, -40);
     }
 
 

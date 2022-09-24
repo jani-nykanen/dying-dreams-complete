@@ -17,6 +17,10 @@ const CLEAR_WAIT_TIME = 120;
 const START_TIME = 30;
 
 
+const TILE_WIDTH = 80;
+const TILE_HEIGHT = 80;
+
+
 export class Stage {
 
 
@@ -550,7 +554,7 @@ export class Stage {
                 if (tid == 0) {
 
                     canvas.setColor(255, 170, 85)
-                          .fillRect(x*8, y*8, 8, 8)
+                          .fillRect(x*(TILE_WIDTH/2), y*(TILE_HEIGHT/2), TILE_WIDTH/2, TILE_HEIGHT/2)
                           .setColor();
                 }
                 else {
@@ -560,35 +564,25 @@ export class Stage {
                     sx = tid % COLUMN_COUNT;
                     sy = (tid / COLUMN_COUNT) | 0;
 
-                    canvas.drawBitmapRegion(bmp, sx*8, sy*8, 8, 8, x*8, y*8);
+                    canvas.drawBitmapRegion(bmp, 
+                        sx*(TILE_WIDTH/2), sy*(TILE_HEIGHT/2), 
+                        (TILE_WIDTH/2), (TILE_HEIGHT/2), 
+                        x*(TILE_WIDTH/2), y*(TILE_HEIGHT/2));
                 }
             }
         }
     }
 
 
-    private drawWater(canvas : Canvas, dx : number, dy : number) : void {
+    private drawWater(canvas : Canvas, dx : number, dy : number, bmp : Bitmap | undefined) : void {
 
-        const AMPLITUDE = 2;
-        const YOFF = 6;
-
-        let baseWave = this.staticAnimationTimer * Math.PI*2;
-        let wave : number;
-
-        dy += YOFF;
+        let frame = Math.floor(this.staticAnimationTimer * 4);
         
-        canvas.setColor(170, 255, 255);
-        for (let x = 0; x < 16; ++ x) {
-
-            wave = Math.round(Math.sin(baseWave + (Math.PI*2) / 16 * x) * AMPLITUDE * Math.sin(Math.PI / 16 * x));
-
-            canvas.fillRect(dx + x, dy + wave, 1, 16 - (wave + YOFF));
-        }
-        canvas.setColor();
+        canvas.drawBitmapRegion(bmp, frame*TILE_WIDTH, TILE_HEIGHT*3, TILE_WIDTH, TILE_HEIGHT, dx, dy);
     }
 
 
-    private drawNonTerrainStaticTiles(canvas : Canvas, bmp : Bitmap) : void {
+    private drawNonTerrainStaticTiles(canvas : Canvas, bmp : Bitmap | undefined) : void {
 
         const BRIDGE_OFF = -2;
 
@@ -597,8 +591,8 @@ export class Stage {
 
         this.activeState.iterate(0, (x : number, y : number, v : number) => {
 
-            dx = x*16;
-            dy = y*16;
+            dx = x*TILE_WIDTH;
+            dy = y*TILE_HEIGHT;
 
             switch (v) {
 
@@ -607,18 +601,24 @@ export class Stage {
 
                 for (let j = 0; j < 2; ++ j) {
 
-                    canvas.drawBitmapRegion(bmp, 48, 40, 16, 8, dx, dy + j*8);
+                    canvas.drawBitmapRegion(bmp, 
+                        TILE_WIDTH*3, TILE_HEIGHT*3 - TILE_HEIGHT, 
+                        TILE_WIDTH, TILE_HEIGHT/2, 
+                        dx, dy + j*TILE_HEIGHT/2);
                 }
                 if (y > 0 && this.baseTilemap[(y-1)*this.width + x] != 2) {
 
-                    canvas.drawBitmapRegion(bmp, 48, 32, 16, 8, dx, dy -  8);
+                    canvas.drawBitmapRegion(bmp, 
+                        TILE_WIDTH*3, TILE_HEIGHT*2,
+                         TILE_WIDTH, TILE_HEIGHT/2, 
+                         dx, dy - TILE_HEIGHT/2);
                 }
                 break;
 
             // Bridge
             case 3:
 
-                canvas.drawBitmapRegion(bmp, 0, 16, 16, 16, dx, dy + BRIDGE_OFF);
+                canvas.drawBitmapRegion(bmp, 0, TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, dx, dy + BRIDGE_OFF);
                 break;
 
             // Flame
@@ -633,13 +633,16 @@ export class Stage {
             // Spikes
             case 6:
 
-                canvas.drawBitmapRegion(bmp, 48, 8, 16, 8, dx, dy+8);
+                canvas.drawBitmapRegion(bmp, 
+                    TILE_WIDTH*3, TILE_HEIGHT/2, 
+                    TILE_WIDTH, TILE_HEIGHT/2, 
+                    dx, dy+TILE_HEIGHT/2);
                 break;
 
             // Lava
             case 7:
 
-                this.drawWater(canvas, dx, dy);
+                this.drawWater(canvas, dx, dy, bmp);
                 break;
 
             // Ice block
@@ -719,8 +722,9 @@ export class Stage {
         if (!climbing && this.activeState.getTile(1, x, y-1) == 4)
             row = 1;
     
-        canvas.drawBitmapRegion(bmp, frame*16, row*16, 16, 16, 
-                dx, dy + 1, this.activeState.getFlip());
+        canvas.drawBitmapRegion(bmp, 
+                frame*TILE_WIDTH, row*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, 
+                dx, dy + 5, this.activeState.getFlip());
     }
 
 
@@ -737,13 +741,13 @@ export class Stage {
     
             direction = this.moveData[y * this.width + x];
     
-            dx = x*16;
-            dy = y*16;
+            dx = x*TILE_WIDTH;
+            dy = y*TILE_HEIGHT;
     
             if (direction != Direction.None) {
     
-                dx -= DX[Number(direction)] * (1.0 - this.moveTimer) * 16;
-                dy -= DY[Number(direction)] * (1.0 - this.moveTimer) * 16;
+                dx -= DX[Number(direction)] * (1.0 - this.moveTimer) * TILE_WIDTH;
+                dy -= DY[Number(direction)] * (1.0 - this.moveTimer) * TILE_HEIGHT;
             }
             
             switch (value) {
