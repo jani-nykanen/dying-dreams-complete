@@ -121,6 +121,11 @@ export class Transformations {
 
     public push() : Transformations {
 
+        if (this.modelStack.length == 128) {
+
+            throw "Model stack got too big, beep boop!";
+        }
+
         this.modelStack.push(this.model.clone());
         return this;
     }

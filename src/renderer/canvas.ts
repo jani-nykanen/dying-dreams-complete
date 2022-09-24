@@ -4,6 +4,7 @@ import { Bitmap } from "./bitmap.js";
 import { Mesh } from "./mesh.js";
 import { Renderer, ShaderType } from "./renderer.js";
 import { Sprite } from "./sprite.js";
+import { Transformations } from "./transform.js";
 
 export const enum Flip {
 
@@ -44,6 +45,12 @@ export class Canvas {
 
     public readonly width : number;
     public readonly height : number;
+
+    // A lazy way to add support for rotated bitmaps...
+    public get transform() : Transformations {
+
+        return this.renderer.transform;
+    }
 
 
     constructor(renderer : Renderer, width : number, height : number, assets : Assets) {

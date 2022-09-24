@@ -350,13 +350,13 @@ export class Stage {
     }
 
 
-    private spawnStarParticles(x : number, y : number, count : number, 
-        angleStart : number, color : RGBA, spawnBat = false) : void {
+    private spawnParticles(x : number, y : number, count : number, 
+        angleStart : number, index : number, spawnBat = false) : void {
 
-        const BAT_SPEED_X_RANGE = 1.0;
-        const BAT_SPEED_Y = 0.5;
-        const BASE_SPEED = 2.0;
-        const VERTICAL_JUMP = -1.0;
+        const BAT_SPEED_X_RANGE = 10.0;
+        const BAT_SPEED_Y = 2.5;
+        const BASE_SPEED = 10.0;
+        const VERTICAL_JUMP = -5.0;
 
         let angle : number;
 
@@ -368,13 +368,13 @@ export class Stage {
                 .spawn(x, y, 
                     Math.cos(angle) * BASE_SPEED, 
                     Math.sin(angle) * BASE_SPEED + VERTICAL_JUMP,
-                 color);
+                    index);
         }   
 
         if (spawnBat) {
 
             (nextParticle(this.bats, Bat) as Bat)
-                .spawn(x, y, (Math.random() * 2 - 1.0) * BAT_SPEED_X_RANGE, BAT_SPEED_Y);
+                .spawn(x, y, (Math.random() * 1.0 - 0.5) * BAT_SPEED_X_RANGE, BAT_SPEED_Y);
         }
     }
 
@@ -394,12 +394,6 @@ export class Stage {
     private checkStaticTileEvents(assets : Assets, event : CoreEvent) : boolean {
 
         const HURTING_TILES = [5, 6, 7];
-        
-        const COLORS = [
-            new RGBA(255, 255, 255),
-            new RGBA(255, 255, 85),
-            new RGBA(170, 255, 255)
-        ];
 
         let somethingHappened = false;
         let hasUnpressedButtons = false;
@@ -408,7 +402,7 @@ export class Stage {
         let bottom : number;
         let top : number;
 
-        let color : RGBA;
+        let index : number;
 
         this.cleared = true;
 
@@ -431,23 +425,24 @@ export class Stage {
                 HURTING_TILES.includes(bottom)) ||
                 (top == 10 && bottom == 5)) {
 
-                color = COLORS[0];
-
+                index = 0;
                 if (top != 10)
                     this.activeState.setTile(1, x, y, 0);
                 
                 if (bottom == 5) {
 
                     this.activeState.setTile(0, x, y, 0);
-                    color = COLORS[1];
+                    index = 1;
                 }
                 else if (bottom == 7) {
 
                     this.activeState.setTile(0, x, y, 8);
-                    color = COLORS[2];
+                    index = 2;
                 }
 
-                this.spawnStarParticles(x*16 + 8, y*16 + 8, 4, Math.PI/4, color, top == 4);
+                this.spawnParticles(
+                    x*TILE_WIDTH + TILE_WIDTH/2, y*TILE_HEIGHT + TILE_HEIGHT/2, 
+                    6, Math.PI/3, index, top == 4);
 
                 event.audio.playSample(assets.getSample("die"), 0.60);
 
@@ -587,7 +582,7 @@ export class Stage {
 
         dy += YOFF;
         
-        canvas.setColor(170, 255, 255, 0.67);
+        canvas.setColor(170, 255, 255, 0.75);
         for (let x = 0; x < TILE_WIDTH; ++ x) {
 
             px = x + xshift;
@@ -745,8 +740,8 @@ export class Stage {
             row = 1;
     
         canvas.drawBitmapRegion(bmp, 
-                frame*TILE_WIDTH, row*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, 
-                dx, dy + 5, this.activeState.getFlip());
+                frame*96, row*96, 96, 96, 
+                dx - 8, dy - 7, this.activeState.getFlip());
     }
 
 
@@ -930,6 +925,7 @@ export class Stage {
         let bmpFigure = canvas.getBitmap("figure");
         let bmpBat = canvas.getBitmap("bat");
         let bmpFontBig = canvas.getBitmap("fontBig");
+        let bmpStars = canvas.getBitmap("stars");
 
         if (bmpStaticTiles == undefined || bmpFigure == undefined || bmpFontBig == undefined) {
 
@@ -948,7 +944,7 @@ export class Stage {
 
         for (let s of this.stars) {
 
-            s.draw(canvas);
+            s.draw(canvas, bmpStars);
         }
         for (let b of this.bats) {
 

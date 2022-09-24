@@ -77,7 +77,7 @@ export class Particle {
 
     public spawnBase(x : number, y : number, sx : number, sy : number) : void {
 
-        const GRAVITY = 4.0;
+        const GRAVITY = 20.0;
 
         this.pos = new Vector2(x, y);
         this.speed = new Vector2(sx, sy);
@@ -105,7 +105,7 @@ export class StarParticle extends Particle {
 
 
     private waveTimer = 0.0;
-    private color : RGBA;
+    private index : number = 0;
 
 
     constructor() {
@@ -113,10 +113,8 @@ export class StarParticle extends Particle {
         super();
 
         this.friction.x = 0;
-        this.friction.y = 0.10;
+        this.friction.y = 0.50;
         this.radius = 16;
-
-        this.color = new RGBA();
     }
 
 
@@ -128,10 +126,7 @@ export class StarParticle extends Particle {
     }
 
 
-    public draw(canvas : Canvas) : void {
-
-        const MIN_R = 7;
-        const VARY_R = 2;
+    public draw(canvas : Canvas, bmp : Bitmap | undefined) : void {
 
         if (!this.exist)
             return;
@@ -139,18 +134,21 @@ export class StarParticle extends Particle {
         let px = Math.round(this.pos.x);
         let py = Math.round(this.pos.y);
 
-        let r = Math.round(MIN_R + Math.sin(this.waveTimer) * VARY_R);
+        canvas.transform.push()
+              .translate(px, py)
+              .rotate(Math.atan2(this.speed.y, this.speed.x) + Math.PI/2)
+              .use();
 
-        canvas.setColor(this.color.r, this.color.g, this.color.b, this.color.a)
-              .fillRegularStar(px, py, r)
-              .setColor();
+        canvas.drawBitmapRegion(bmp, this.index*64, 0, 64, 64, -32, -32);
+
+        canvas.transform.pop().use();
     }
 
 
-    public spawn(x : number, y : number, sx : number, sy : number, color : RGBA) {
+    public spawn(x : number, y : number, sx : number, sy : number, index : number) {
 
         this.spawnBase(x, y, sx, sy);
-        this.color = color.clone();
+        this.index = index;
     }
 }
 
@@ -206,9 +204,9 @@ export class Bat extends Particle {
 
         super();
 
-        this.friction.x = 0.10;
-        this.friction.y = 0.10;
-        this.radius = 8;
+        this.friction.x = 0.25;
+        this.friction.y = 0.50;
+        this.radius = 40;
     }
 
 
@@ -232,16 +230,23 @@ export class Bat extends Particle {
         let px = Math.round(this.pos.x);
         let py = Math.round(this.pos.y);
 
+        canvas.transform.push()
+              .translate(px, py)
+              .rotate(Math.atan2(this.target.y, this.speed.x) + Math.PI/2)
+              .use();
+
         canvas.drawBitmapRegion(bmp, 
-            0, this.frame*8, 16, 8,
-            px-4, py-4);
+            0, this.frame*48, 96, 48,
+            -48, -24);
+
+        canvas.transform.pop().use();
     }
 
 
     public spawn(x : number, y : number, sx : number, sy : number) {
 
         this.spawnBase(x, y, sx, sy);
-        this.speed.x = 0;
+        this.speed.x = 0.0;
 
         this.target.y *= -1;
     }
