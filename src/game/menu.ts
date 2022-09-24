@@ -101,14 +101,14 @@ export class Menu {
     public draw(canvas : Canvas, x = 0, y = 0, box = true) {
 
         const BOX_OFFSET = 4;
-        const XOFF = 0;
-        const YOFF = 10;
+        const XOFF = -24;
+        const YOFF = 56;
 
         if (!this.active) return;
 
-        let font : Bitmap | undefined;
+        let font = canvas.getBitmap("font");
 
-        let w = this.maxLength * (8 + XOFF);
+        let w = this.maxLength * (64 + XOFF);
         let h = this.buttons.length * YOFF;
 
         let dx = x + canvas.width/2 - w/2;
@@ -121,10 +121,18 @@ export class Menu {
                         w + BOX_OFFSET*2, h + BOX_OFFSET*2);
         }
 
+        
         canvas.setColor();
         for (let i = 0; i < this.buttons.length; ++ i) {
 
-            font = canvas.getBitmap(i == this.cursorPos ? "fontYellow" : "font")
+            if (i == this.cursorPos) {
+
+                canvas.setColor(255, 255, 85);
+            }
+            else {
+
+                canvas.setColor();
+            }
 
             canvas.drawText(font, this.buttons[i].getText(),
                 dx, dy + i * YOFF, XOFF, 0);

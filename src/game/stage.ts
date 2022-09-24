@@ -576,18 +576,24 @@ export class Stage {
 
     private drawWater(canvas : Canvas, dx : number, dy : number) : void {
 
-        const AMPLITUDE = 6;
-        const YOFF = 30;
+        const AMPLITUDE = 8;
+        const YOFF = 40;
 
         let baseWave = this.staticAnimationTimer * Math.PI*2;
         let wave : number;
+
+        let xshift = (Math.floor(dx / TILE_WIDTH) % 2) * TILE_WIDTH;
+        let px : number;
 
         dy += YOFF;
         
         canvas.setColor(170, 255, 255, 0.67);
         for (let x = 0; x < TILE_WIDTH; ++ x) {
 
-            wave = Math.round(Math.sin(baseWave + (Math.PI*2) / TILE_WIDTH * x) * AMPLITUDE * Math.sin(Math.PI*4 / TILE_WIDTH * x));
+            px = x + xshift;
+
+            wave = Math.round(Math.sin(baseWave + (Math.PI*2) / (TILE_WIDTH*2) * px) * 
+                   AMPLITUDE * Math.sin(Math.PI*4 / (TILE_WIDTH*2) * px));
             canvas.fillRect(dx + x, dy + wave, 1, TILE_HEIGHT - (wave + YOFF));
         }
 

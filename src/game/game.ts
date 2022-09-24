@@ -1,4 +1,4 @@
-import { Canvas } from "../renderer/canvas.js";
+import { Canvas, TextAlign } from "../renderer/canvas.js";
 import { InputState } from "../core/inputstate.js";
 import { Menu, MenuButton } from "./menu.js";
 import { Stage } from "./stage.js";
@@ -7,16 +7,14 @@ import { Scene, SceneParam } from "../core/scene.js";
 import { CoreEvent } from "../core/event.js";
 
 
-// TODO: Remove
-const LAST_LEVEL = 13;
-
-
 const HINTS = [
-    "  HINT: USE ARROW KEYS TO MOVE.",
-    "  HINT: PRESS BACKSPACE TO UNDO.",
-    "  HINT: PRESS R TO RESTART.",
-    "  HINT: PRESS ENTER TO PAUSE."
+    "  HINT: Use \"Arrow Keys\" to move.",
+    "  HINT: Press \"Backspace\" to undo.",
+    "  HINT: Press \"R\" to restart.",
+    "  HINT: Press \"Enter\" to Pause."
 ];
+const HINT_XOFF = -24;
+const HINT_SCALE = 0.75;
 
 
 export class Game implements Scene {
@@ -36,27 +34,27 @@ export class Game implements Scene {
 
         this.pauseMenu = new Menu(
             [
-                new MenuButton("RESUME", () => this.pauseMenu.deactivate()),
+                new MenuButton("Resume", () => this.pauseMenu.deactivate()),
 
-                new MenuButton("RESTART", () => {
+                new MenuButton("Restart", () => {
 
                     this.stage.restart();
                     this.pauseMenu.deactivate();
                 }),
 
-                new MenuButton("UNDO", () => {
+                new MenuButton("Undo", () => {
 
                     this.stage.undo();
                     this.pauseMenu.deactivate();
                 }),
 
-                new MenuButton("AUDIO: ON ", (event : CoreEvent) => {
+                new MenuButton("Audio: On ", (event : CoreEvent) => {
 
                     event.audio.toggle();
                     this.pauseMenu.changeButtonText(3, event.audio.getStateString());
                 }),
 
-                new MenuButton("QUIT", (event : CoreEvent) => {
+                new MenuButton("Quit", (event : CoreEvent) => {
 
                     this.pauseMenu.deactivate();
                     event.transition.activate(true, TransitionType.Fade,
@@ -97,7 +95,7 @@ export class Game implements Scene {
     public update(event : CoreEvent) : void {
 
         const BACKGROUND_SPEED = 0.025;
-        const HINT_SPEED = 0.5;
+        const HINT_SPEED = 2.0;
 
         if (!this.pauseMenu.isActive()) {
             
@@ -123,7 +121,7 @@ export class Game implements Scene {
 
         if (this.stageIndex <= HINTS.length) {
 
-            this.hintPos = (this.hintPos + HINT_SPEED*event.step) % (HINTS[this.stageIndex-1].length * 8);
+            this.hintPos = (this.hintPos + HINT_SPEED*event.step) % (HINTS[this.stageIndex-1].length * (64 + HINT_XOFF) * HINT_SCALE);
         }
 
         if (this.stage.update(event, event.assets)) {
@@ -172,15 +170,19 @@ export class Game implements Scene {
             this.pauseMenu.draw(canvas);
         }
 
+        // TODO: Separate function for this!
         if (this.stageIndex <= HINTS.length) {
 
             canvas.setColor(0, 0, 0, 0.33)
-                  .fillRect(0, 0, canvas.width, 10)
+                  .fillRect(0, 0, canvas.width, 48)
                   .setColor();
             for (let i = 0; i < 2; ++ i) {
 
-                canvas.drawText(canvas.getBitmap("font"), HINTS[this.stageIndex-1], 
-                    -Math.floor(this.hintPos) + i * HINTS[this.stageIndex-1].length*8, 1, 0);
+                canvas.drawText(
+                    canvas.getBitmap("font"), HINTS[this.stageIndex-1], 
+                    -Math.floor(this.hintPos) + i * HINTS[this.stageIndex-1].length*(64 + HINT_XOFF)*HINT_SCALE, 
+                    2, HINT_XOFF, 0,
+                    TextAlign.Left, HINT_SCALE, HINT_SCALE);
             }
         }
     }

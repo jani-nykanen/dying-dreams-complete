@@ -189,7 +189,8 @@ export class Canvas {
 
     public drawText(font : Bitmap | undefined, str : string, 
         dx : number, dy : number, 
-        xoff = 0.0, yoff = 0.0, align = TextAlign.Left) : Canvas {
+        xoff = 0.0, yoff = 0.0, align = TextAlign.Left,
+        scalex = 1.0, scaley = 1.0) : Canvas {
 
         if (font == undefined)
             return this;
@@ -203,12 +204,12 @@ export class Canvas {
 
         if (align == TextAlign.Center) {
 
-            dx -= ((str.length+1) * (cw + xoff)) / 2.0 ;
+            dx -= ((str.length+1) * (cw + xoff)) * scalex / 2.0 ;
             x = dx;
         }
         else if (align == TextAlign.Right) {
             
-            dx -= ((str.length) * (cw + xoff));
+            dx -= ((str.length) * (cw + xoff)) * scalex;
             x = dx;
         }
 
@@ -218,18 +219,15 @@ export class Canvas {
             if (chr == '\n'.charCodeAt(0)) {
 
                 x = dx;
-                y += (ch + yoff);
+                y += (ch + yoff) * scaley;
                 continue;
             }
 
-            this.drawBitmapRegion(
-                font, 
-                (chr % 16) * cw, 
-                ((chr/16)|0) * ch, 
-                cw, ch, 
-                x, y);
+            this.drawScaledBitmapRegion(font, 
+                (chr % 16) * cw, ((chr/16)|0) * ch, cw, ch, 
+                x, y, cw*scalex, ch*scaley);
 
-            x += cw + xoff;
+            x += (cw + xoff) * scalex;
         }
 
         return this;
