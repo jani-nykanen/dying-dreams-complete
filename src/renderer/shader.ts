@@ -10,8 +10,11 @@ enum Uniform {
     TextureScale = 4,
     Color = 5,
     TextureSampler = 6,
+    Amplitude = 7,
+    Period = 8,
+    Wave = 9,
 
-    Last = 7
+    Last = 9
 };
 
 
@@ -23,14 +26,17 @@ const UNIFORM_NAMES = [
     "texPos",
     "texScale",
     "color",
-    "texSampler"
+    "texSampler",
+    "amplitude",
+    "period",
+    "wave"
 ];
 
 
 export class Shader {
 
 
-    private uniforms : Array<WebGLUniformLocation | null>;
+    private uniforms : Array<WebGLUniformLocation | null>; // Why not map?
     private program : WebGLShader;
 
     private readonly gl : WebGLRenderingContext;
@@ -40,7 +46,7 @@ export class Shader {
 
         this.gl = gl;
 
-        this.uniforms = new Array<WebGLUniformLocation> (Uniform.Last);
+        this.uniforms = new Array<WebGLUniformLocation> (Uniform.Last + 1);
         this.program = this.buildShader(vertexSource, fragmentSource);
 
         this.getUniformLocations();
@@ -99,7 +105,7 @@ export class Shader {
 
     private getUniformLocations() : void {
 
-        for (let i = 0; i < Uniform.Last; ++ i) {
+        for (let i = 0; i < Uniform.Last+1; ++ i) {
 
             this.uniforms[i] = this.gl.getUniformLocation(this.program, UNIFORM_NAMES[i]);
         }
@@ -152,4 +158,12 @@ export class Shader {
         matrix.passToShader(this.gl, this.uniforms[Uniform.Transform]);
     }
 
+
+    public setWaveParameters(wave : number, period : number, amplitude : number) : void {
+
+        let gl = this.gl;
+        gl.uniform1f(this.uniforms[Uniform.Wave], wave);
+        gl.uniform1f(this.uniforms[Uniform.Period], period);
+        gl.uniform1f(this.uniforms[Uniform.Amplitude], amplitude);
+    }
 }

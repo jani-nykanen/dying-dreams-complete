@@ -74,16 +74,6 @@ export class Canvas {
         dx += this.transition.x;
         dy += this.transition.y;
 
-        sx |= 0;
-        sy |= 0;
-        sw |= 0;
-        sh |= 0;
-
-        dx |= 0;
-        dy |= 0;
-        dw |= 0;
-        dh |= 0;
-
         if ((flip & Flip.Horizontal) == Flip.Horizontal) {
 
             dx += dw;
@@ -159,6 +149,30 @@ export class Canvas {
 
         return this;
     }
+
+ 
+    public drawVerticallyWavingBitmap(bmp : Bitmap | undefined, 
+        dx : number, dy : number, wave : number, period : number, amplitude : number) : Canvas {
+
+        if (bmp == undefined)
+            return this;
+
+        dx += this.transition.x;
+        dy += this.transition.y;
+
+        this.renderer.changeShader(ShaderType.TexturedWaves);
+        this.renderer.setWaveParameters(wave, period, amplitude);
+
+        this.renderer.setVertexTransform(dx, dy, bmp.width, bmp.height);
+        this.renderer.setFragmentTransform(0, 0, 1, 1);
+
+        this.renderer.bindTexture(bmp);
+        this.renderer.bindMesh();
+        this.renderer.drawMesh();
+
+        return this;
+    }
+
 
 
     public fillRect(x = 0, y = 0, w = this.width, h = this.height) : Canvas {
@@ -339,8 +353,7 @@ export class Canvas {
     }
 
 
-    // Note: this method does not support flipping (reason: laziness, also 
-    // don't need it here)
+    // TODO: Implement in shader for better performance!
     public drawHorizontallyWavingBitmapRegion(bmp : Bitmap | undefined, 
         sx : number, sy : number, sw : number, sh : number, 
         dx : number, dy : number,

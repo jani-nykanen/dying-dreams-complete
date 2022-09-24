@@ -11,7 +11,7 @@ export const enum ShaderType {
     Textured = 0,
     NoTexture = 1,
     TexturedFixedColor = 2,
-    TexturedCRT = 3,
+    TexturedWaves = 3,
     
     Last = 3,
 };
@@ -33,7 +33,7 @@ const createCanvasElement = (width : number, height : number) : [HTMLCanvasEleme
 
     return [
         canvas, 
-        canvas.getContext("webgl", {alpha: false, antialias: true, stencil: true}) as WebGLRenderingContext
+        canvas.getContext("webgl", {alpha: false, antialias: false, stencil: true}) as WebGLRenderingContext
     ];
 }
 
@@ -91,8 +91,8 @@ export class Renderer {
             VertexSource.NoTexture, FragmentSource.NoTexture); 
         this.shaders[ShaderType.TexturedFixedColor] = new Shader(this.glCtx, 
             VertexSource.Textured, FragmentSource.TexturedFixedColor);  
-        this.shaders[ShaderType.TexturedCRT] = new Shader(this.glCtx, 
-            VertexSource.TexturedCRT, FragmentSource.TexturedCRT);      
+        this.shaders[ShaderType.TexturedWaves] = new Shader(this.glCtx, 
+            VertexSource.Textured, FragmentSource.TexturedWaves);      
 
         this.activeShader = this.shaders[0];
         this.activeShader.use();
@@ -278,7 +278,6 @@ export class Renderer {
     }
 
 
-
     public resetColor() : void {
         
         this.activeShader.setColor(
@@ -286,5 +285,11 @@ export class Renderer {
             this.activeColor.g, 
             this.activeColor.b, 
             this.activeColor.a);
+    }
+
+
+    public setWaveParameters(wave : number, period : number, amplitude : number) : void {
+
+        this.activeShader.setWaveParameters(wave, period, amplitude);
     }
 }

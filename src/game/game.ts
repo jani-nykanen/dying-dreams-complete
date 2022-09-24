@@ -74,15 +74,8 @@ export class Game implements Scene {
         let bmp = canvas.getBitmap("background");
         if (bmp == undefined)
             return;
-/*
-        let offy = 4; // Math.abs(canvas.height - bmp.height) / 2;
 
-        let amplitude = offy;
-        let perioud = Math.PI*4 / bmp.width;
-
-        let dy : number;
-*/
-        canvas.drawBitmap(bmp, 0, -40);
+        canvas.drawVerticallyWavingBitmap(bmp, 0, -10, this.backgroundTimer, Math.PI*6, 10.0 / bmp.height);
     }
 
 

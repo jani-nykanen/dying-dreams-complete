@@ -8,6 +8,7 @@
         {"name": "fontBig", "path": "font_big.png"},
         {"name": "fontYellow", "path": "font_yellow.png"},
         {"name": "background", "path": "background.png"},
+        {"name": "snowflake", "path": "snowflake.png"},
         {"name": "staticTiles", "path": "static_tiles.png"}
     ],
 

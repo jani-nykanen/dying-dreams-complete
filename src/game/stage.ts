@@ -574,20 +574,35 @@ export class Stage {
     }
 
 
-    private drawWater(canvas : Canvas, dx : number, dy : number, bmp : Bitmap | undefined) : void {
+    private drawWater(canvas : Canvas, dx : number, dy : number) : void {
 
-        let frame = Math.floor(this.staticAnimationTimer * 4);
+        const AMPLITUDE = 6;
+        const YOFF = 30;
+
+        let baseWave = this.staticAnimationTimer * Math.PI*2;
+        let wave : number;
+
+        dy += YOFF;
         
-        canvas.drawBitmapRegion(bmp, frame*TILE_WIDTH, TILE_HEIGHT*3, TILE_WIDTH, TILE_HEIGHT, dx, dy);
+        canvas.setColor(170, 255, 255, 0.67);
+        for (let x = 0; x < TILE_WIDTH; ++ x) {
+
+            wave = Math.round(Math.sin(baseWave + (Math.PI*2) / TILE_WIDTH * x) * AMPLITUDE * Math.sin(Math.PI*4 / TILE_WIDTH * x));
+            canvas.fillRect(dx + x, dy + wave, 1, TILE_HEIGHT - (wave + YOFF));
+        }
+
+        canvas.setColor();
     }
 
 
     private drawNonTerrainStaticTiles(canvas : Canvas, bmp : Bitmap | undefined) : void {
 
         const BRIDGE_OFF = -2;
+        const FLAME_AMPLITUDE = 4;
 
         let dx : number;
         let dy : number;
+        let shift : number;
 
         this.activeState.iterate(0, (x : number, y : number, v : number) => {
 
@@ -624,10 +639,11 @@ export class Stage {
             // Flame
             case 5:
 
+                shift = -Math.sin(this.staticAnimationTimer * Math.PI * 2) * FLAME_AMPLITUDE;
                 canvas.drawHorizontallyWavingBitmapRegion(
-                    bmp, 16, 32, 16, 16, dx, dy,
+                    bmp, TILE_WIDTH, TILE_HEIGHT*2, TILE_WIDTH, TILE_HEIGHT, dx + shift, dy,
                     this.staticAnimationTimer * Math.PI*2,
-                    Math.PI*4 / 16, 1);
+                    Math.PI*6 / TILE_HEIGHT, FLAME_AMPLITUDE);
                 break;
 
             // Spikes
@@ -642,7 +658,7 @@ export class Stage {
             // Lava
             case 7:
 
-                this.drawWater(canvas, dx, dy, bmp);
+                this.drawWater(canvas, dx, dy);
                 break;
 
             // Ice block

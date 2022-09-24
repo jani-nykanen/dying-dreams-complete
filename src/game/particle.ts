@@ -59,7 +59,7 @@ export class Particle {
 
             if (this.pos.y - this.radius >= event.screenHeight) {
 
-                this.pos.y -= event.screenHeight + this.radius;
+                this.pos.y -= event.screenHeight;
             }
         }
         else {
