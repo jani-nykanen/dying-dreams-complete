@@ -164,8 +164,8 @@ export class RubbleParticle extends Particle {
         super();
 
         this.friction.x = 0;
-        this.friction.y = 0.10;
-        this.radius = 8;
+        this.friction.y = 0.50;
+        this.radius = 40;
     }
 
 
@@ -177,11 +177,12 @@ export class RubbleParticle extends Particle {
         let px = Math.round(this.pos.x);
         let py = Math.round(this.pos.y);
 
-        let srcx = 16 + (this.tileIndex % 2) * 8;
-        let srcy = 16 + Math.floor(this.tileIndex/2) * 8;
+        let srcx = 80 + (this.tileIndex % 2) * 40;
+        let srcy = 80 + Math.floor(this.tileIndex/2) * 40;
 
-        canvas.drawBitmapRegion(bmp, srcx, srcy, 8, 8,
-            px-4, py-4);
+        canvas.drawBitmapRegion(bmp, 
+            srcx, srcy, 40, 40,
+            px-20, py-20);
     }
 
 

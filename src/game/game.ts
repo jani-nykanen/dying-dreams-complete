@@ -142,7 +142,7 @@ export class Game implements Scene {
 
                     try {
 
-                        window.localStorage.setItem("dying_dreams_js13k_save", String(this.stageIndex+1));
+                        window.localStorage.setItem("dying_dreams_complete_save", String(this.stageIndex+1));
                     }
                     catch (e) {
 

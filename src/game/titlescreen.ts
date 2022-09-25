@@ -22,16 +22,16 @@ export class TitleScreen implements Scene {
 
         this.startMenu = new Menu(
             [
-                new MenuButton("NEW GAME", (event : CoreEvent) => {
+                new MenuButton("New Game", (event : CoreEvent) => {
 
                     this.startGame(event);
                 }),
-                new MenuButton("CONTINUE", (event : CoreEvent) => {
+                new MenuButton("Continue", (event : CoreEvent) => {
 
                     let index = 1;
                     try {
 
-                        index = Math.max(Number(window.localStorage.getItem("dying_dreams_js13k_save")), 1);
+                        index = Math.max(Number(window.localStorage.getItem("dying_dreams_complete_save")), 1);
                     }
                     catch (e) {
 
@@ -185,18 +185,20 @@ export class TitleScreen implements Scene {
               
         if (this.phase == 0) {
 
-            canvas.drawText(canvas.getBitmap("font"), "(C)2022 JANI NYK@NEN",
-                canvas.width/2, canvas.height-9, 0, 0, TextAlign.Center);
+            canvas.drawText(canvas.getBitmap("font"), "(C)2022 Jani Nyk@nen",
+                canvas.width/2, canvas.height-56, 0, 0, TextAlign.Center, 0.75, 0.75);
 
             if (this.enterTimer >= 30) {
 
-                canvas.drawText(canvas.getBitmap("fontYellow"), "PRESS ENTER",
-                    canvas.width/2, canvas.height/2 + 28, 0, 0, TextAlign.Center);
+                canvas.setColor(255, 255, 0)
+                      .drawText(canvas.getBitmap("fontYellow"), "Press ENTER to start",
+                            canvas.width/2, canvas.height/2 + 28, 0, 0, TextAlign.Center, 0.75, 0.75);
+                canvas.setColor();
             }
         }
         else {
 
-            this.startMenu.draw(canvas, 0, 40);
+            this.startMenu.draw(canvas, 0, 128);
         }
         this.drawLogo(canvas);
     }

@@ -7,7 +7,6 @@ import { Bat, nextParticle, RubbleParticle, StarParticle } from "./particle.js";
 import { Direction, PuzzleState } from "./puzzlestate.js";
 import { Snowfall } from "./snowfall.js";
 import { COLUMN_COUNT, createTerrainMap } from "./terrainmap.js";
-import { RGBA } from "../common/rgba.js";
 
 
 const SOLID_TILES = [1, 3, 8, 9, 13];
@@ -141,9 +140,10 @@ export class Stage {
             for (let dx = 0; dx < 2; ++ dx) {
 
                 (nextParticle(this.rubble, RubbleParticle) as RubbleParticle)
-                    .spawn(x + dx*8 + 4, y + dy*8 + 4,
-                        0, INITIAL_SPEEDS[dy*2 + dx],
-                        dy*2 + dx);
+                    .spawn(x + dx*(TILE_WIDTH/2) + TILE_WIDTH/4, 
+                           y + dy*(TILE_HEIGHT/2) + TILE_HEIGHT/4,
+                           0, INITIAL_SPEEDS[dy*2 + dx] * 5,
+                           dy*2 + dx);
             }
         }
         this.rubbleSpawned = true;
@@ -167,7 +167,7 @@ export class Stage {
         if (!fallCheck && y < this.height-1 && this.activeState.getTile(0, x, y+1) == 9) {
 
             this.activeState.setTile(0, x, y+1, 0);
-            this.spawnRubble(x*16, (y+1)*16);
+            this.spawnRubble(x*TILE_WIDTH, (y+1)*TILE_HEIGHT);
         }
 
         this.moveData[(y + dy) * this.width + (x + dx)] = direction;
@@ -618,7 +618,7 @@ export class Stage {
                 for (let j = 0; j < 2; ++ j) {
 
                     canvas.drawBitmapRegion(bmp, 
-                        TILE_WIDTH*3, TILE_HEIGHT*3 - TILE_HEIGHT, 
+                        TILE_WIDTH*3, TILE_HEIGHT*3 - TILE_HEIGHT/2, 
                         TILE_WIDTH, TILE_HEIGHT/2, 
                         dx, dy + j*TILE_HEIGHT/2);
                 }
@@ -665,31 +665,42 @@ export class Stage {
             // Ice block
             case 8:
 
-                canvas.drawBitmapRegion(bmp, 0, 32, 16, 16, dx, dy);
+                canvas.drawBitmapRegion(bmp, 0, TILE_HEIGHT*2, TILE_WIDTH, TILE_HEIGHT, dx, dy);
                 break;
 
             // Breaking block
             case 9:
 
-                canvas.drawBitmapRegion(bmp, 16, 16, 16, 16, dx, dy);
+                canvas.drawBitmapRegion(bmp, TILE_WIDTH, TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, dx, dy);
                 break;
 
             // Button
             case 11:
 
-                if (this.activeState.getTile(1, x, y) == 0 || 
-                    (this.moving && this.moveTimer < 0.5)) {
+                if (this.activeState.getTile(1, x, y) == 0) {
+                //   || (this.moving && this.moveTimer < 0.5)) {
 
-                    canvas.drawBitmapRegion(bmp, 32, 32, 16, 8, dx, dy+8);
+                    canvas.drawBitmapRegion(bmp, 
+                        TILE_WIDTH*2, TILE_HEIGHT*2 + TILE_HEIGHT/2, 
+                        TILE_WIDTH, TILE_HEIGHT/2, 
+                        dx, dy + TILE_HEIGHT/2);
                 }
-                canvas.drawBitmapRegion(bmp, 32, 40, 16, 8, dx, dy+8);
+                else {
+
+                    canvas.drawBitmapRegion(bmp, 
+                        TILE_WIDTH*2, TILE_HEIGHT*2, 
+                        TILE_WIDTH, TILE_HEIGHT/2, 
+                        dx, dy + TILE_HEIGHT/2);
+                }
                 break;
 
             // Toggleable blocks
             case 12:
             case 13:
                     
-                canvas.drawBitmapRegion(bmp, 48 - (v-12)*16, 16, 16, 16, dx, dy);
+                canvas.drawBitmapRegion(bmp, 
+                    TILE_WIDTH*3 - (v-12)*TILE_WIDTH, TILE_HEIGHT, 
+                    TILE_WIDTH, TILE_HEIGHT, dx, dy);
                 break;
 
             default:
@@ -777,7 +788,7 @@ export class Stage {
             // Boulder
             case 10:
     
-                canvas.drawBitmapRegion(bmp, 96, 16, 16, 16, dx, dy+1);
+                canvas.drawBitmapRegion(bmp, 576, 96, 96, 96, dx-8, dy-7);
                 break;
     
             default:
@@ -791,31 +802,37 @@ export class Stage {
 
         const WAIT_TIME = 60;
         const OFFSET = -18;
+        const Y_OFF = 256;
 
         const MESSAGES = ["STAGE", "CLEAR"];
 
-        let px = canvas.width/2 - (32 + OFFSET) * 6 / 2.0;
+        let px = canvas.width/2 - (64 + OFFSET) * 5 / 2.0;
         let t = Math.min(1.0, (1.0 - (this.clearTimer - WAIT_TIME) / (CLEAR_WAIT_TIME - WAIT_TIME))) * 5;
 
         let dx : number;
         let dy : number;
 
         let end = Math.floor(t);
+        let alpha : number;
 
         for (let j = 0; j < Math.min(5, end + 1); ++ j) {
             
-            dx = px + j * (32 + OFFSET);
+            dx = px + j * (64 + OFFSET);
 
             dy = 0;
+            alpha = 1.0;
             if (j == end) {
 
-                dy = canvas.height/2 * (1.0 - (t % 1.0));
+                dy = Y_OFF * (1.0 - (t % 1.0));
+                alpha = (t % 1.0);
             }
+            canvas.setColor(255, 255, 255, alpha);
 
-            canvas.drawText(bmpFont, MESSAGES[0].charAt(j), dx, canvas.height/2-24 - dy)
+            canvas.drawText(bmpFont, MESSAGES[0].charAt(j), dx, canvas.height/2-64 - dy)
                   .drawText(bmpFont, MESSAGES[1].charAt(j), dx, canvas.height/2-2 + dy);
             
         }
+        canvas.setColor();
     }
 
 
