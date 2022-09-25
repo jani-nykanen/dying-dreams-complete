@@ -56,21 +56,21 @@ export class StartIntro implements Scene {
 
         if (this.phase == 0) {
 
-            canvas.drawText(font, "A GAME BY", 
+            canvas.drawText(font, "A game by", 
                 canvas.width/2, 
-                canvas.height/2 -10, 
-                0, 0, TextAlign.Center);
-            canvas.drawText(font, "JANI NYK@NEN", 
+                canvas.height/2 -40, 
+                -24, 0, TextAlign.Center, 0.5, 0.5);
+            canvas.drawText(font, "Jani Nyk@nen", 
                 canvas.width/2, 
                 canvas.height/2 + 2, 
-                0, 0, TextAlign.Center)
+                -24, 0, TextAlign.Center)
         }
         else {
 
-            canvas.drawText(font, "MADE FOR JS13K", 
+            canvas.drawText(font, "(Something)", 
                 canvas.width/2, 
-                canvas.height/2 - 4, 
-                0, 0, TextAlign.Center);
+                canvas.height/2 - 32, 
+                -24, 0, TextAlign.Center);
         }
     }
 }

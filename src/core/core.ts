@@ -45,6 +45,27 @@ export class Core {
     }
 
 
+    private drawLoadingScreen(canvas : Canvas) : void {
+
+        const OUTLINE = 4;
+        const WIDTH = 256;
+        const HEIGHT = 64;
+
+        let p = this.assets.getLoadingPercentage();
+
+        let dx = canvas.width/2 - WIDTH/2;
+        let dy = canvas.height/2 - HEIGHT/2;
+
+        canvas.clear(0, 85, 170);
+        canvas.setColor()
+              .fillRect(dx, dy, WIDTH, HEIGHT)
+              .setColor(0, 85, 170)
+              .fillRect(dx + OUTLINE, dy + OUTLINE, WIDTH - OUTLINE*2, HEIGHT - OUTLINE*2)
+              .setColor()
+              .fillRect(dx + OUTLINE*2, dy + OUTLINE*2, (WIDTH - OUTLINE*4)*p, HEIGHT - OUTLINE*4);
+    }
+
+
     private loop(ts : number) : void {
 
         const MAX_REFRESH_COUNT = 5;
@@ -75,8 +96,7 @@ export class Core {
 
             if (!this.assets.hasLoaded()) {
 
-                canvas.clear(0);
-                // TODO: Loading screen!
+                this.drawLoadingScreen(canvas);
             }
             else {
 

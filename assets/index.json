@@ -10,6 +10,7 @@
         {"name": "background", "path": "background.png"},
         {"name": "snowflake", "path": "snowflake.png"},
         {"name": "stars", "path": "stars.png"},
+        {"name": "logo", "path": "logo.png"},
         {"name": "staticTiles", "path": "static_tiles.png"}
     ],
 

@@ -162,4 +162,8 @@ export class Assets {
         return this.tilemaps.get(name);
     }
 
+
+    // In range [0,1], actually...
+    public getLoadingPercentage = () : number => this.totalAssets == 0 ? 1.0 : this.loaded / this.totalAssets;
+
 }

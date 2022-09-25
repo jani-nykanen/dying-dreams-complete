@@ -78,11 +78,12 @@ export class Transition {
         switch (this.effectType) {
 
         case TransitionType.Fade:
-
+/*
             if (this.param > 0) {
 
                 t = Math.round(t * this.param) / this.param;
             }
+            */
             canvas.setColor(0, 0, 0, t)
                   .fillRect(0, 0, canvas.width, canvas.height);
             break;

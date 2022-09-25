@@ -34,7 +34,7 @@ export class StartScreen implements Scene {
 
     private goToStartIntro(event : CoreEvent) : void {
 
-        event.changeScene("titlescreen", 1);
+        event.changeScene("intro", 1);
     }
 
 

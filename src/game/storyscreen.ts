@@ -6,8 +6,8 @@ import { CoreEvent } from "../core/event";
 
 const STORY = [
     [
-        "YOU ARE HAVING\nTHE SAME\nDREAM AGAIN.",
-        "THE DREAM WHERE\nEVERYONE MUST\nDIE."
+        "You are having\nthe same\ndream again.",
+        "The dream where\neveryone must\ndie."
     ],
     [
         "YOU WAKE UP.",
@@ -118,8 +118,9 @@ export class StoryScreen implements Scene {
 
     public redraw(canvas : Canvas) : void {
      
-        const XOFF = 0;
+        const XOFF = -24;
         const YOFF = 2;
+        const BASE_SCALE = 0.75;
 
         let font = canvas.getBitmap("font");
 
@@ -127,29 +128,31 @@ export class StoryScreen implements Scene {
 
         if (this.isEnding) {
 
-            canvas.drawText(font, "THE END", 
-                canvas.width/2, canvas.height/2-4, 
+            canvas.drawText(font, "The End", 
+                canvas.width/2, canvas.height/2-32, 
                 XOFF, 0, TextAlign.Center);
             return;
         }
 
-        let dx = canvas.width/2 - (this.maxLength * (8 + XOFF)) / 2;
-        let dy = canvas.height/2 - this.height * (8 + YOFF) / 2;
+        let dx = canvas.width/2 - (this.maxLength * (64 + XOFF) * BASE_SCALE) / 2;
+        let dy = canvas.height/2 - this.height * (64 + YOFF) * BASE_SCALE / 2;
 
         if ((this.textIndex > 0 || this.charIndex > 0) &&
             this.textIndex < STORY[this.phase].length) {
 
             canvas.drawText(font, 
                 STORY[this.phase][this.textIndex].substring(0, this.charIndex),
-                dx, dy, XOFF, YOFF);
+                dx, dy, XOFF, YOFF, TextAlign.Left, BASE_SCALE, BASE_SCALE);
         }
 
-        let rectY = Math.round(Math.sin(this.rectTimer)) * 2;
+        let rectY = Math.round(Math.sin(this.rectTimer) * 10);
         if (this.ready) {
 
-            canvas.setColor(255)
-                  .fillRect(dx + this.maxLength * (8 + XOFF) + 4, 
-                  dy + this.height * (8 + YOFF) + 4 + rectY, 6, 6);
+            canvas.fillRect(
+                canvas.width/2 + this.maxLength * (64 + XOFF) * BASE_SCALE / 2 + 30, 
+                dy + this.height * (64 + YOFF) * BASE_SCALE + 20 + rectY, 
+                30, 30);
         }
+        canvas.setColor();
     }
 }

@@ -69,32 +69,21 @@ export class TitleScreen implements Scene {
 
     private drawLogo(canvas : Canvas) : void {
 
-        const POS_Y = [16, 40];
-        const XOFF = -14;
-        const TEXT = ["DYING", "DREAMS"];
-        const CORRECTION = 1.0;
-        const AMPLITUDE = 4;
+        const AMPLITUDE = 16;
 
-        let font = canvas.getBitmap("fontBig");
+        let font = canvas.getBitmap("font");
+        let logo = canvas.getBitmap("logo");
+        if (logo == undefined)
+            return;
 
-        let dx : number;
-        let dy : number;
+        canvas.drawVerticallyWavingBitmap(logo, 
+            canvas.width/2 - logo.width/2, 32, 
+            this.waveTimer, Math.PI*2, AMPLITUDE/logo.height);
+        canvas.setColor(255, 255, 170)
+               .drawText(font, "(In)complete Edition", 
+               canvas.width/2, 336, 
+               -24, 0, TextAlign.Center, 0.5, 0.5);
 
-        for (let i = 0; i < 2; ++ i) {
-
-            dx = canvas.width/2 - (TEXT[i].length + CORRECTION) * (32 + XOFF) / 2.0;
-            for (let j = 0; j < TEXT[i].length; ++ j) {
-
-                dy = Math.round(Math.sin(this.waveTimer + Math.PI*2 / TEXT[i].length * j) * AMPLITUDE);
-                for (let k = 1; k >= 0; -- k) {
-
-                    canvas.drawText(font, 
-                        TEXT[i].charAt(j), 
-                        dx + j * (32 + XOFF) + k, 
-                        dy + POS_Y[i] + k);
-                }
-            }
-        }
     }
 
 
@@ -176,6 +165,8 @@ export class TitleScreen implements Scene {
 
     public redraw(canvas : Canvas) : void {
 
+        let font = canvas.getBitmap("font");
+
         canvas.drawBitmap(canvas.getBitmap("background"), 0, -8)
               .setColor(0, 0, 0, 0.33)
               .fillRect()
@@ -183,22 +174,23 @@ export class TitleScreen implements Scene {
 
         this.drawBats(canvas);
               
+        canvas.drawText(font, "(c)2022 Jani Nyk@nen",
+                    canvas.width/2, canvas.height-36, 
+                    -24, 0, TextAlign.Center, 0.5, 0.5);
+
+        let alpha : number;
         if (this.phase == 0) {
-
-            canvas.drawText(canvas.getBitmap("font"), "(C)2022 Jani Nyk@nen",
-                canvas.width/2, canvas.height-56, 0, 0, TextAlign.Center, 0.75, 0.75);
-
-            if (this.enterTimer >= 30) {
-
-                canvas.setColor(255, 255, 0)
-                      .drawText(canvas.getBitmap("fontYellow"), "Press ENTER to start",
-                            canvas.width/2, canvas.height/2 + 28, 0, 0, TextAlign.Center, 0.75, 0.75);
-                canvas.setColor();
-            }
+    
+            alpha = Math.abs(this.enterTimer - 30) / 30.0;
+            canvas.setColor(255, 255, 85, alpha)
+                  .drawText(font, "Press ENTER",
+                            canvas.width/2, canvas.height/2 + 160, -24, 0, TextAlign.Center, 0.75, 0.75);
+            canvas.setColor();
+            
         }
         else {
 
-            this.startMenu.draw(canvas, 0, 128);
+            this.startMenu.draw(canvas, 0, 176);
         }
         this.drawLogo(canvas);
     }
