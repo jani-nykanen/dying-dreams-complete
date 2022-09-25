@@ -129,7 +129,7 @@ export class Renderer {
 
         let gl = this.glCtx;
 
-        gl.enable(gl.SCISSOR_TEST);
+        // gl.disable(gl.SCISSOR_TEST);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.disable(gl.DEPTH_TEST);
@@ -292,4 +292,5 @@ export class Renderer {
 
         this.activeShader.setWaveParameters(wave, period, amplitude);
     }
+    
 }
