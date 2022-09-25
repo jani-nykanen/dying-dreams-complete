@@ -2,8 +2,6 @@ import { Canvas } from "../renderer/canvas.js";
 import { Bitmap } from "../renderer/bitmap";
 import { CoreEvent } from "../core/event.js";
 import { Vector2 } from "../common/vector.js";
-import { RGBA } from "../common/rgba.js";
-
 
 
 const updateSpeedComponent = (speed : number, target : number, step : number) : number => {
@@ -169,7 +167,7 @@ export class RubbleParticle extends Particle {
     }
 
 
-    public draw(canvas : Canvas, bmp : Bitmap) {
+    public draw(canvas : Canvas, bmp : Bitmap | undefined) {
 
         if (!this.exist)
             return;
@@ -253,6 +251,64 @@ export class Bat extends Particle {
     }
 }
 
+
+export class VanishingLock extends Particle {
+
+
+    private scaleTimer : number = 0.0;
+    private scaleSpeed : number = 1.0;
+
+
+    constructor() {
+
+        super();
+
+        this.friction.x = 0;
+        this.friction.y = 0;
+    }
+
+
+    protected updateLogic(event: CoreEvent) : void {
+        
+        this.scaleTimer += this.scaleSpeed * event.step;
+        if (this.scaleTimer >= 1.0) {
+
+            this.kill();
+        }
+    }
+
+
+    public draw(canvas : Canvas, bmp : Bitmap | undefined) {
+
+        const BASE_SCALE = 1.5;
+
+        if (!this.exist)
+            return;
+
+        let px = Math.round(this.pos.x);
+        let py = Math.round(this.pos.y);
+
+        let scale = 1.0 + this.scaleTimer * (BASE_SCALE - 1.0);
+
+        canvas.setColor(255, 255, 255, Math.max(0, 1.0 - this.scaleTimer))
+              .drawScaledBitmapRegion(bmp, 
+                    0, 240, 80, 80, 
+                    px - 40*scale, py - 40*scale, 
+                    80*scale, 80*scale);  
+    }
+
+
+    public spawn(x : number, y : number, speed = 1.0/30.0) {
+
+        this.spawnBase(x, y, 0, 0);
+        this.scaleSpeed = speed;
+
+        this.target.zeros();
+        this.speed.zeros();
+
+        this.scaleTimer = 0.0;
+    }
+}
 
 
 export const nextParticle = (arr : Array<Particle>, type : Function) : Particle => {

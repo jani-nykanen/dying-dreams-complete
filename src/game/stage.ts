@@ -3,13 +3,13 @@ import { Canvas, Flip, TextAlign } from "../renderer/canvas.js";
 import { Bitmap } from "../renderer/bitmap.js";
 import { CoreEvent } from "../core/event.js";
 import { InputState } from "../core/inputstate.js";
-import { Bat, nextParticle, RubbleParticle, StarParticle } from "./particle.js";
+import { Bat, nextParticle, RubbleParticle, StarParticle, VanishingLock } from "./particle.js";
 import { Direction, PuzzleState } from "./puzzlestate.js";
 import { Snowfall } from "./snowfall.js";
 import { COLUMN_COUNT, createTerrainMap } from "./terrainmap.js";
 
 
-const SOLID_TILES = [1, 3, 8, 9, 13];
+const SOLID_TILES = [1, 3, 8, 9, 13, 14];
 const DYNAMIC_TILES = [4, 10];
 const STATE_BUFFER_MAX = 64;
 const CLEAR_WAIT_TIME = 120;
@@ -44,6 +44,7 @@ export class Stage {
     private stars : Array<StarParticle>;
     private rubble : Array<RubbleParticle>;
     private bats : Array<Bat>;
+    private locks : Array<VanishingLock>;
 
     private snowfall : Snowfall;
 
@@ -83,6 +84,7 @@ export class Stage {
         this.stars = new Array<StarParticle> ();
         this.rubble = new Array<RubbleParticle> ();
         this.bats = new Array<Bat> ();
+        this.locks = new Array<VanishingLock> ();
 
         this.snowfall = new Snowfall();
     }
@@ -391,6 +393,35 @@ export class Stage {
     }
 
 
+    private countKeys() : void {
+
+        const LOCK_SPEED = 15.0;
+
+        let keyFound = false;
+        this.activeState.iterate(0, (x : number, y : number, v : number) => {
+
+            if (v == 15) {
+
+                keyFound = true;
+                return;
+            }
+        });
+        if (keyFound)
+            return;
+
+        // Destroy keyholes
+        this.activeState.iterate(0, (x : number, y : number, v : number) => {
+
+            if (v == 14) {
+
+                this.activeState.setTile(0, x, y, 0);
+                (nextParticle(this.locks, VanishingLock) as VanishingLock)
+                    .spawn((x + 0.5) * TILE_WIDTH, (y + 0.5) * TILE_HEIGHT, 1.0/LOCK_SPEED);
+            }
+        });
+    }
+
+
     private checkStaticTileEvents(assets : Assets, event : CoreEvent) : boolean {
 
         const HURTING_TILES = [5, 6, 7];
@@ -403,6 +434,8 @@ export class Stage {
         let top : number;
 
         let index : number;
+
+        let keyCollected = false;
 
         this.cleared = true;
 
@@ -418,6 +451,17 @@ export class Stage {
 
                 if (top == 0 && !hasUnpressedButtons)
                     hasUnpressedButtons = true;
+            }
+
+            // Key
+            if (bottom == 15 && top == 4) {
+
+                this.activeState.setTile(0, x, y, 0);
+                event.audio.playSample(assets.getSample("key"), 0.60);
+
+                keyCollected = true;
+
+                this.spawnParticles((x + 0.5) * TILE_WIDTH, (y + 0.5) * TILE_HEIGHT, 4, Math.PI/4, 3);
             }
 
             // Kill players and/or boulders
@@ -469,6 +513,12 @@ export class Stage {
             this.clearTimer = CLEAR_WAIT_TIME;
             event.audio.playSample(assets.getSample("victory"), 0.60);
         }
+
+        if (keyCollected) {
+
+            this.countKeys();
+        }
+
         return somethingHappened;
     }
 
@@ -532,7 +582,7 @@ export class Stage {
     }
 
 
-    private drawTerrain(canvas : Canvas, bmp : Bitmap) : void {
+    private drawTerrain(canvas : Canvas, bmp : Bitmap | undefined) : void {
 
         let sx : number;
         let sy : number;
@@ -604,6 +654,7 @@ export class Stage {
         let dx : number;
         let dy : number;
         let shift : number;
+        let phase : number;
 
         this.activeState.iterate(0, (x : number, y : number, v : number) => {
 
@@ -703,6 +754,20 @@ export class Stage {
                     TILE_WIDTH, TILE_HEIGHT, dx, dy);
                 break;
 
+            // Keyhole
+            case 14:
+
+                canvas.drawBitmapRegion(bmp, 0, TILE_HEIGHT*3, TILE_WIDTH, TILE_HEIGHT, dx, dy);
+                break;
+
+            // Key
+            case 15:
+                
+                phase = (x % 2 == y % 2) ? 0.5 : 0;
+                shift = Math.sin((this.staticAnimationTimer + phase) * Math.PI * 2) * 4; 
+                canvas.drawBitmapRegion(bmp, TILE_WIDTH, TILE_HEIGHT*3, TILE_WIDTH, TILE_HEIGHT, dx, dy + shift);
+                break;
+
             default:
                 break;
             }
@@ -710,7 +775,7 @@ export class Stage {
     }
 
 
-    private drawAnimatedFigure(canvas : Canvas, bmp : Bitmap, 
+    private drawAnimatedFigure(canvas : Canvas, bmp : Bitmap | undefined, 
         x : number, y : number, dx : number, dy : number, 
         direction : Direction) : void {
     
@@ -756,7 +821,7 @@ export class Stage {
     }
 
 
-    private drawDynamicObjects(canvas : Canvas, bmp : Bitmap) : void {
+    private drawDynamicObjects(canvas : Canvas, bmp : Bitmap | undefined) : void {
     
         const DX = [0, 1, 0, -1, 0];
         const DY = [0, 0, -1, 0, 1];
@@ -798,7 +863,7 @@ export class Stage {
     }
 
 
-    private drawStageClearText(canvas : Canvas, bmpFont : Bitmap) : void {
+    private drawStageClearText(canvas : Canvas, bmpFont : Bitmap | undefined) : void {
 
         const WAIT_TIME = 60;
         const OFFSET = -18;
@@ -836,7 +901,7 @@ export class Stage {
     }
 
 
-    private drawStageStart(canvas : Canvas, bmpFont : Bitmap) : void {
+    private drawStageStart(canvas : Canvas, bmpFont : Bitmap | undefined) : void {
 
         canvas.setColor(0, 0, 0, 0.33)
               .fillRect()
@@ -931,6 +996,10 @@ export class Stage {
 
             b.update(event);
         }
+        for (let l of this.locks) {
+
+            l.update(event);
+        }
 
         this.snowfall.update(event);
     }
@@ -944,11 +1013,6 @@ export class Stage {
         let bmpFontBig = canvas.getBitmap("fontBig");
         let bmpStars = canvas.getBitmap("stars");
 
-        if (bmpStaticTiles == undefined || bmpFigure == undefined || bmpFontBig == undefined) {
-
-            throw "Missing art files!";
-        }
-
         this.drawNonTerrainStaticTiles(canvas, bmpStaticTiles);
         this.drawTerrain(canvas, bmpStaticTiles);
 
@@ -959,6 +1023,10 @@ export class Stage {
 
         this.drawDynamicObjects(canvas, bmpFigure);
 
+        for (let l of this.locks) {
+
+            l.draw(canvas, bmpStaticTiles);
+        }
         for (let s of this.stars) {
 
             s.draw(canvas, bmpStars);
@@ -1024,6 +1092,11 @@ export class Stage {
 
             b.kill();
         }
+        for (let l of this.locks) {
+
+            l.kill();
+        }
+        
 
         this.snowfall.shuffle();
     }

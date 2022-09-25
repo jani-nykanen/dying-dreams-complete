@@ -26,6 +26,7 @@
         {"name": "select", "path": "select.wav"},
         {"name": "toggle1", "path": "toggle1.wav"},
         {"name": "toggle2", "path": "toggle2.wav"},
+        {"name": "key", "path": "key.wav"},
 
         {"name": "victory", "path": "victory.ogg"}
     ],
