@@ -93,7 +93,7 @@ export class TitleScreen implements Scene {
         const POS_X = [32, 16, 56, 72, 108, 128, 144];
         const AMPLITUDE = [4, 8, 6, 16, 6, 12, 4];
 
-        let bmp = canvas.getBitmap("base");
+        let bmp = canvas.getBitmap("bat");
         let dx : number;
         let dy : number;
 
@@ -102,14 +102,13 @@ export class TitleScreen implements Scene {
 
         for (let i = 0; i < POS_X.length; ++ i) {
 
-            dx = (Math.round((POS_X[i] - 8 + this.batTimers[i])) % 176) - 16;
+            dx = (Math.round((POS_X[i]*5 - 48 + this.batTimers[i])) % (176*5)) - 96;
             w = this.waveTimer + i * (Math.PI*2 / 6);
-            dy = POS_Y[i] - 4 + Math.round(Math.sin(w) * AMPLITUDE[i]);
+            dy = POS_Y[i]*5 - 20 + Math.round(Math.sin(w) * AMPLITUDE[i] *5);
 
-            frame = (this.batTimers[i] % 8) < 4 ? 0 : 1;
+            frame = (this.batTimers[i] % 16) < 8 ? 0 : 1;
 
-            canvas.drawBitmapRegion(bmp, 96, 32 + frame*8, 16, 8,
-                dx, dy);
+            canvas.drawBitmapRegion(bmp, 0, frame*48, 96, 48, dx, dy);
         }
     }
 
@@ -139,7 +138,7 @@ export class TitleScreen implements Scene {
 
         for (let i = 0; i < this.batTimers.length; ++ i) {
             
-            this.batTimers[i] = (this.batTimers[i] + BAT_SPEED[i]*event.step) % (event.screenWidth+16);
+            this.batTimers[i] = (this.batTimers[i] + 2.0*BAT_SPEED[i]*event.step) % (event.screenWidth+96);
         }
 
         if (event.transition.isActive())

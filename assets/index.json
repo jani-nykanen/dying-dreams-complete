@@ -46,6 +46,18 @@
         {"name": "9", "path": "9.tmx"},
         {"name": "10", "path": "10.tmx"},
         {"name": "11", "path": "11.tmx"},
-        {"name": "12", "path": "12.tmx"}
+        {"name": "12", "path": "12.tmx"},
+        {"name": "13", "path": "13.tmx"},
+        {"name": "14", "path": "14.tmx"},
+        {"name": "15", "path": "15.tmx"},
+        {"name": "16", "path": "16.tmx"},
+        {"name": "17", "path": "17.tmx"},
+        {"name": "18", "path": "18.tmx"},
+        {"name": "19", "path": "19.tmx"},
+        {"name": "20", "path": "20.tmx"},
+        {"name": "21", "path": "21.tmx"},
+        {"name": "22", "path": "22.tmx"},
+        {"name": "23", "path": "23.tmx"},
+        {"name": "24", "path": "24.tmx"}
     ]
 }

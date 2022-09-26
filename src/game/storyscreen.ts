@@ -10,11 +10,11 @@ const STORY = [
         "The dream where\neveryone must\ndie."
     ],
     [
-        "YOU WAKE UP.",
-        "EVERYONE AROUND\nYOU IS DEAD.",
-        "EVERYONE YOU\nEVER CARED\nABOUT.",
-        "DID YOU KILL\nTHEM OR WERE\nTHEY KILLED BY\nYOUR DREAM?",
-        "THAT YOU WILL\nNEVER KNOW."
+        "You wake up.",
+        "Everyone around\nyou is dead.",
+        "Everyone you\never cared\nabout.",
+        "Did yuo kill\nthem or were\nthey killed by\nyour dream?",
+        "That you will\nnever know."
     ]
 ];
 
