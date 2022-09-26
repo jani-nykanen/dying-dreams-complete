@@ -868,7 +868,8 @@ export class Stage {
 
         const WAIT_TIME = 60;
         const OFFSET = -18;
-        const Y_OFF = 256;
+        const Y_OFF = 200;
+        const SCALE = 2.0;
 
         const MESSAGES = ["STAGE", "CLEAR"];
 
@@ -881,21 +882,29 @@ export class Stage {
         let end = Math.floor(t);
         let alpha : number;
 
+        let scale : number;
+
         for (let j = 0; j < Math.min(5, end + 1); ++ j) {
             
-            dx = px + j * (64 + OFFSET);
+            dx = px + j * (64 + OFFSET) + (64 + OFFSET)/2;
 
             dy = 0;
             alpha = 1.0;
+            scale = 1.0;
             if (j == end) {
 
                 dy = Y_OFF * (1.0 - (t % 1.0));
                 alpha = (t % 1.0);
+                scale = 1.0 + SCALE * (1.0 - (t % 1.0));
             }
             canvas.setColor(255, 255, 255, alpha);
 
-            canvas.drawText(bmpFont, MESSAGES[0].charAt(j), dx, canvas.height/2-64 - dy)
-                  .drawText(bmpFont, MESSAGES[1].charAt(j), dx, canvas.height/2-2 + dy);
+            dx -= (64 + OFFSET) * scale / 2;
+
+            canvas.drawText(bmpFont, MESSAGES[0].charAt(j), dx, canvas.height/2-64 - dy, 
+                        0, 0, TextAlign.Left, scale, scale)
+                  .drawText(bmpFont, MESSAGES[1].charAt(j), dx, canvas.height/2-2 + dy,
+                        0, 0, TextAlign.Left, scale, scale);
             
         }
         canvas.setColor();
@@ -1031,8 +1040,14 @@ export class Stage {
 
     public drawObjectsWithoutShadow(canvas : Canvas) : void {
     
+        let bmpStaticTiles = canvas.getBitmap("staticTiles");
         let bmpFontBig = canvas.getBitmap("fontBig");
         let bmpStars = canvas.getBitmap("stars");
+
+        for (let l of this.locks) {
+
+            l.draw(canvas, bmpStaticTiles);
+        }
 
         for (let s of this.stars) {
 

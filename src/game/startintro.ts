@@ -63,13 +63,17 @@ export class StartIntro implements Scene {
             canvas.drawText(font, "Jani Nyk@nen", 
                 canvas.width/2, 
                 canvas.height/2 + 2, 
-                -24, 0, TextAlign.Center)
+                -24, 0, TextAlign.Center);
         }
         else {
 
-            canvas.drawText(font, "(Something)", 
+            canvas.drawText(font, "Music by", 
                 canvas.width/2, 
-                canvas.height/2 - 32, 
+                canvas.height/2 -40, 
+                -24, 0, TextAlign.Center, 0.5, 0.5);
+            canvas.drawText(font, "H0dari", 
+                canvas.width/2, 
+                canvas.height/2 + 2, 
                 -24, 0, TextAlign.Center);
         }
     }
