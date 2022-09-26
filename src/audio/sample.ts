@@ -67,7 +67,7 @@ export class Sample {
         if (this.activeBuffer == null) return;
 
         this.activeBuffer.disconnect();
-        this.activeBuffer.stop(0);
+        this.activeBuffer.stop();
         this.activeBuffer = null;
     }
 
@@ -77,7 +77,6 @@ export class Sample {
         if (this.activeBuffer == null) return;
 
         this.pauseTime = ctx.currentTime - this.startTime;
-
         this.stop();
     }
 

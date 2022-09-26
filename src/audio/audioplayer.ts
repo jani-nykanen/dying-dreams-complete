@@ -5,7 +5,7 @@ export class AudioPlayer {
 
 
     protected ctx : AudioContext;
-    private musicTrack : Sample | null = null;
+    private musicTrack : Sample | undefined = undefined;
 
     private globalVolume : number;
     private enabled : boolean = false;
@@ -36,27 +36,27 @@ export class AudioPlayer {
     }
 
 
-    public fadeInMusic(sample : Sample, vol = 1.0, fadeTime = 0.0) {
+    public fadeInMusic(sample : Sample | undefined, vol = 1.0, fadeTime = 0.0) {
 
         const EPS = 0.001;
 
         if (!this.enabled || this.globalVolume <= EPS) return;
 
-        if (this.musicTrack != null) {
+        if (this.musicTrack != undefined) {
 
             this.musicTrack.stop();
-            this.musicTrack = null;
+            this.musicTrack = undefined;
         }
 
         let v = this.globalVolume*vol;
-        sample.fadeIn(this.ctx, fadeTime == null ? v : 0.01, v, true, 0, fadeTime);
+        sample?.fadeIn(this.ctx, fadeTime == null ? v : 0.01, v, true, 0, fadeTime);
         this.musicTrack = sample;
     }
 
 
     public pauseMusic() : void {
 
-        if (!this.enabled || this.musicTrack == null)
+        if (!this.enabled || this.musicTrack == undefined)
             return;
 
         this.musicTrack.pause(this.ctx);
@@ -65,7 +65,7 @@ export class AudioPlayer {
 
     public resumeMusic() : boolean {
 
-        if (!this.enabled || this.musicTrack == null)
+        if (!this.enabled || this.musicTrack == undefined)
             return false;
 
         this.musicTrack.resume(this.ctx);
@@ -76,11 +76,11 @@ export class AudioPlayer {
 
     public stopMusic() : void {
 
-        if (!this.enabled || this.musicTrack == null)
+        if (!this.enabled || this.musicTrack == undefined)
             return;
 
         this.musicTrack.stop();
-        this.musicTrack = null;
+        this.musicTrack = undefined;
     }
 
 

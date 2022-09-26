@@ -28,6 +28,7 @@
         {"name": "toggle2", "path": "toggle2.wav"},
         {"name": "key", "path": "key.wav"},
 
+        {"name": "theme", "path": "theme.ogg"},
         {"name": "victory", "path": "victory.ogg"}
     ],
 

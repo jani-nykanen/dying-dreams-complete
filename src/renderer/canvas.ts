@@ -1,10 +1,10 @@
 import { Vector2 } from "../common/vector.js";
 import { Assets } from "../io/assets.js";
 import { Bitmap } from "./bitmap.js";
-import { Mesh } from "./mesh.js";
-import { Renderer, ShaderType, StencilCondition, StencilOperation } from "./renderer.js";
+import { Renderer, ShaderType } from "./renderer.js";
 import { Sprite } from "./sprite.js";
 import { Transformations } from "./transform.js";
+
 
 export const enum Flip {
 

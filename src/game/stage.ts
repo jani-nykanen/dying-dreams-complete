@@ -15,7 +15,6 @@ const STATE_BUFFER_MAX = 64;
 const CLEAR_WAIT_TIME = 120;
 const START_TIME = 30;
 
-
 const TILE_WIDTH = 80;
 const TILE_HEIGHT = 80;
 
@@ -510,6 +509,7 @@ export class Stage {
 
         if (this.cleared) {
 
+            event.audio.pauseMusic();
             this.clearTimer = CLEAR_WAIT_TIME;
             event.audio.playSample(assets.getSample("victory"), 0.60);
         }
@@ -1006,22 +1006,14 @@ export class Stage {
     }
 
 
-    public drawBase(canvas : Canvas, shadowLayer = false) : void {
+    public drawObjectsWithShadow(canvas : Canvas, shadowLayer = false) : void {
 
-        let bmpStaticTiles = canvas.getBitmap("staticTiles");
-
-        this.drawNonTerrainStaticTiles(canvas, bmpStaticTiles, shadowLayer);
-        this.drawTerrain(canvas, bmpStaticTiles);
-    }
-
-
-    public drawTopLayer(canvas : Canvas) : void {
-    
-        let bmpFontBig = canvas.getBitmap("fontBig");
-        let bmpStars = canvas.getBitmap("stars");
         let bmpStaticTiles = canvas.getBitmap("staticTiles");
         let bmpFigure = canvas.getBitmap("figure");
         let bmpBat = canvas.getBitmap("bat");
+
+        this.drawNonTerrainStaticTiles(canvas, bmpStaticTiles, shadowLayer);
+        this.drawTerrain(canvas, bmpStaticTiles);
 
         for (let r of this.rubble) {
 
@@ -1034,6 +1026,13 @@ export class Stage {
 
             b.draw(canvas, bmpBat);
         }
+    }
+
+
+    public drawObjectsWithoutShadow(canvas : Canvas) : void {
+    
+        let bmpFontBig = canvas.getBitmap("fontBig");
+        let bmpStars = canvas.getBitmap("stars");
 
         for (let s of this.stars) {
 

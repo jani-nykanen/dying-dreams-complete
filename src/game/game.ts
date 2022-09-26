@@ -17,6 +17,9 @@ const HINT_XOFF = -24;
 const HINT_SCALE = 0.75;
 
 
+const MUSIC_VOL= 0.40;
+
+
 export class Game implements Scene {
 
 
@@ -50,7 +53,16 @@ export class Game implements Scene {
 
                 new MenuButton("Audio: On ", (event : CoreEvent) => {
 
-                    event.audio.toggle();
+                    if (event.audio.isEnabled()) {
+
+                        event.audio.stopMusic();
+                        event.audio.toggle(false);
+                    }
+                    else {
+
+                        event.audio.toggle(true);
+                        event.audio.fadeInMusic(event.assets.getSample("theme"), MUSIC_VOL, 1000);
+                    }
                     this.pauseMenu.changeButtonText(3, event.audio.getStateString());
                 }),
 
@@ -77,6 +89,30 @@ export class Game implements Scene {
     }
 
 
+    private drawBase(canvas : Canvas) : void {
+
+        const SHADOW_OFF = 6;
+        const SHADOW_ALPHA = 0.33;
+
+        this.drawBackground(canvas);
+
+        // Shadows
+        canvas.setColor(0, 0, 0, 1);
+        canvas.toggleSilhouetteRendering(true);
+        canvas.move(SHADOW_OFF, SHADOW_OFF);
+        this.stage.drawObjectsWithShadow(canvas, true);
+        canvas.toggleSilhouetteRendering(false);
+        canvas.moveTo();
+        
+        canvas.setColor(255, 255, 255, 1.0 - SHADOW_ALPHA);
+        this.drawBackground(canvas);
+
+        canvas.setColor();
+        this.stage.drawObjectsWithShadow(canvas);
+        this.stage.drawObjectsWithoutShadow(canvas);
+    }
+
+
     public init(param : SceneParam, event: CoreEvent) : void {
 
         this.stageIndex = 1;
@@ -89,6 +125,8 @@ export class Game implements Scene {
         this.stage = new Stage(this.stageIndex, event);
 
         this.hintPos = 0;
+
+        event.audio.fadeInMusic(event.assets.getSample("theme"), MUSIC_VOL, 1000);
     }
 
 
@@ -151,6 +189,8 @@ export class Game implements Scene {
                     ++ this.stageIndex;
                     this.stage.changeStage(this.stageIndex, event);
                     this.hintPos = 0;
+
+                    event.audio.resumeMusic();
                 });
             }
         } 
@@ -159,21 +199,7 @@ export class Game implements Scene {
 
     public redraw(canvas : Canvas) : void {
 
-        const SHADOW_OFF = 6;
-
-        this.drawBackground(canvas);
-
-        // Shadows
-        canvas.setColor(0, 0, 0, 0.25);
-        canvas.toggleSilhouetteRendering(true);
-        canvas.move(SHADOW_OFF, SHADOW_OFF);
-        this.stage.drawBase(canvas, true);
-
-        canvas.toggleSilhouetteRendering(false);
-        canvas.setColor();
-        canvas.moveTo();
-        this.stage.drawBase(canvas);
-        this.stage.drawTopLayer(canvas);
+        this.drawBase(canvas);
 
         if (this.pauseMenu.isActive()) {
 

@@ -17,25 +17,6 @@ export const enum ShaderType {
 };
 
 
-export const enum StencilCondition {
-
-    Always = 0, 
-    NotEqual = 1,
-    Equal = 2,
-    GreaterOrEqual = 3,
-    LessOrEqual = 4,
-    Less = 5,
-    Greater = 6
-};
-
-
-export const enum StencilOperation {
-
-    Zero = 0,
-    Keep = 1
-};
-
-
 const createCanvasElement = (width : number, height : number) : [HTMLCanvasElement, WebGLRenderingContext] => {
 
     let div = document.createElement("div");
@@ -52,7 +33,7 @@ const createCanvasElement = (width : number, height : number) : [HTMLCanvasEleme
 
     return [
         canvas, 
-        canvas.getContext("webgl", {alpha: false, antialias: false, stencil: true}) as WebGLRenderingContext
+        canvas.getContext("webgl", {alpha: false, antialias: false, /*stencil: true*/}) as WebGLRenderingContext
     ];
 }
 
@@ -338,23 +319,4 @@ export class Renderer {
         }
     }
 
-
-    public setStencilCondition(cond : StencilCondition) : void {
-
-        let gl = this.glCtx;
-
-        const LOOKUP = [gl.ALWAYS, gl.NOTEQUAL, gl.EQUAL, gl.GEQUAL, gl.LEQUAL, gl.LESS, gl.GREATER];
-
-        gl.stencilFunc(LOOKUP[cond], 1, 0xff);
-    }
-
-
-    public setStencilOperation(op : StencilOperation) : void {
-
-        let gl = this.glCtx;
-
-        const LOOKUP = [gl.ZERO, gl.KEEP];
-
-        gl.stencilOp(LOOKUP[op], LOOKUP[op], LOOKUP[op]);
-    }
 }
