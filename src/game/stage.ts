@@ -646,7 +646,7 @@ export class Stage {
     }
 
 
-    private drawNonTerrainStaticTiles(canvas : Canvas, bmp : Bitmap | undefined) : void {
+    private drawNonTerrainStaticTiles(canvas : Canvas, bmp : Bitmap | undefined, shadowLayer = false) : void {
 
         const BRIDGE_OFF = -2;
         const FLAME_AMPLITUDE = 4;
@@ -707,10 +707,11 @@ export class Stage {
                     dx, dy+TILE_HEIGHT/2);
                 break;
 
-            // Lava
+            // Water
             case 7:
 
-                this.drawWater(canvas, dx, dy);
+                if (!shadowLayer)
+                    this.drawWater(canvas, dx, dy);
                 break;
 
             // Ice block
@@ -1005,16 +1006,22 @@ export class Stage {
     }
 
 
-    public draw(canvas : Canvas) : void {
+    public drawBase(canvas : Canvas, shadowLayer = false) : void {
+
+        let bmpStaticTiles = canvas.getBitmap("staticTiles");
+
+        this.drawNonTerrainStaticTiles(canvas, bmpStaticTiles, shadowLayer);
+        this.drawTerrain(canvas, bmpStaticTiles);
+    }
+
+
+    public drawTopLayer(canvas : Canvas) : void {
     
+        let bmpFontBig = canvas.getBitmap("fontBig");
+        let bmpStars = canvas.getBitmap("stars");
         let bmpStaticTiles = canvas.getBitmap("staticTiles");
         let bmpFigure = canvas.getBitmap("figure");
         let bmpBat = canvas.getBitmap("bat");
-        let bmpFontBig = canvas.getBitmap("fontBig");
-        let bmpStars = canvas.getBitmap("stars");
-
-        this.drawNonTerrainStaticTiles(canvas, bmpStaticTiles);
-        this.drawTerrain(canvas, bmpStaticTiles);
 
         for (let r of this.rubble) {
 
@@ -1023,17 +1030,14 @@ export class Stage {
 
         this.drawDynamicObjects(canvas, bmpFigure);
 
-        for (let l of this.locks) {
-
-            l.draw(canvas, bmpStaticTiles);
-        }
-        for (let s of this.stars) {
-
-            s.draw(canvas, bmpStars);
-        }
         for (let b of this.bats) {
 
             b.draw(canvas, bmpBat);
+        }
+
+        for (let s of this.stars) {
+
+            s.draw(canvas, bmpStars);
         }
 
         this.snowfall.draw(canvas);

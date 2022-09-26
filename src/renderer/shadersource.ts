@@ -63,7 +63,7 @@ export const FragmentSource = {
         vec2 tex = uv * texScale + texPos;    
         vec4 res = texture2D(texSampler, tex) * color;
     
-        if (res.a <= 0.01) {
+        if (res.a < 1.0/255.0) {
              discard;
         }
         gl_FragColor = res;
@@ -90,7 +90,7 @@ export const FragmentSource = {
         vec2 tex = uv * texScale + texPos;    
         float alpha = texture2D(texSampler, tex).a;
     
-        if (alpha <= 0.01) {
+        if (alpha < 1.0/255.0) {
              discard;
         }
         gl_FragColor = color;
@@ -137,7 +137,7 @@ export const FragmentSource = {
         vec2 tex = vec2(uv.x, uv.y + shift) * texScale + texPos;    
         vec4 res = texture2D(texSampler, tex) * color;
     
-        if (res.a <= 0.01) {
+        if (res.a <= 1.0/255.0) {
              discard;
         }
         gl_FragColor = res;

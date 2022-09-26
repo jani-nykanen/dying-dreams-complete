@@ -2,7 +2,7 @@ import { Vector2 } from "../common/vector.js";
 import { Assets } from "../io/assets.js";
 import { Bitmap } from "./bitmap.js";
 import { Mesh } from "./mesh.js";
-import { Renderer, ShaderType } from "./renderer.js";
+import { Renderer, ShaderType, StencilCondition, StencilOperation } from "./renderer.js";
 import { Sprite } from "./sprite.js";
 import { Transformations } from "./transform.js";
 
@@ -23,13 +23,6 @@ export const enum TextAlign {
 };
 
 
-export const enum SpecialRenderFlag {
-
-    None = 0,
-    FixedColorBitmap = 1
-};
-
-
 export class Canvas {
     
     
@@ -37,9 +30,9 @@ export class Canvas {
 
     private transition : Vector2;
 
-    private specialRenderFlag : SpecialRenderFlag;
-
     private framebuffer : Bitmap;
+
+    private silhouetteActive : boolean = false;
 
     private readonly assets : Assets;
 
@@ -58,8 +51,6 @@ export class Canvas {
         this.renderer = renderer;
 
         this.transition = new Vector2();
-
-        this.specialRenderFlag = SpecialRenderFlag.None;
 
         this.framebuffer = this.renderer.createFramebuffer(width, height, true);
 
@@ -99,7 +90,7 @@ export class Canvas {
         sw /= bmp.width;
         sh /= bmp.height;
 
-        if (this.specialRenderFlag == SpecialRenderFlag.FixedColorBitmap) {
+        if (this.silhouetteActive) {
 
             this.renderer.changeShader(ShaderType.TexturedFixedColor);
         }
@@ -185,7 +176,7 @@ export class Canvas {
     public fillRect(x = 0, y = 0, w = this.width, h = this.height) : Canvas {
 
         this.renderer.changeShader(ShaderType.NoTexture);
-
+        
         this.renderer.setVertexTransform(x, y, w, h);
         this.renderer.bindMesh();
         this.renderer.drawMesh();
@@ -411,6 +402,9 @@ export class Canvas {
 
     public setColor(r = 255, g = r, b = g, a = 1.0) : Canvas {
 
+        if (this.silhouetteActive)
+            return this;
+
         this.renderer.setColor(r / 255, g / 255, b / 255, a);
         return this;
     }
@@ -430,9 +424,10 @@ export class Canvas {
     }
 
 
-    public setSpecialRenderFlag(flag = SpecialRenderFlag.None) : void {
+    public toggleSilhouetteRendering(state = false) : Canvas {
 
-        this.specialRenderFlag = flag;
+        this.silhouetteActive = state;
+        return this;
     }
 
 

@@ -17,6 +17,25 @@ export const enum ShaderType {
 };
 
 
+export const enum StencilCondition {
+
+    Always = 0, 
+    NotEqual = 1,
+    Equal = 2,
+    GreaterOrEqual = 3,
+    LessOrEqual = 4,
+    Less = 5,
+    Greater = 6
+};
+
+
+export const enum StencilOperation {
+
+    Zero = 0,
+    Keep = 1
+};
+
+
 const createCanvasElement = (width : number, height : number) : [HTMLCanvasElement, WebGLRenderingContext] => {
 
     let div = document.createElement("div");
@@ -140,6 +159,9 @@ export class Renderer {
 
         gl.enableVertexAttribArray(0);
         gl.enableVertexAttribArray(1);
+
+        gl.stencilMask(0xff);
+        gl.disable(gl.STENCIL_TEST);
     }
 
 
@@ -293,4 +315,46 @@ export class Renderer {
         this.activeShader.setWaveParameters(wave, period, amplitude);
     }
     
+
+    public clearStencilBuffer() : void {
+
+        let gl = this.glCtx;
+
+        gl.clear(gl.STENCIL_BUFFER_BIT);
+    }
+
+
+    public toggleStencilTest(state : boolean) : void {
+
+        let gl = this.glCtx;
+
+        if (state) {
+
+            gl.enable(gl.STENCIL_TEST);
+        }
+        else {
+
+            gl.disable(gl.STENCIL_TEST);
+        }
+    }
+
+
+    public setStencilCondition(cond : StencilCondition) : void {
+
+        let gl = this.glCtx;
+
+        const LOOKUP = [gl.ALWAYS, gl.NOTEQUAL, gl.EQUAL, gl.GEQUAL, gl.LEQUAL, gl.LESS, gl.GREATER];
+
+        gl.stencilFunc(LOOKUP[cond], 1, 0xff);
+    }
+
+
+    public setStencilOperation(op : StencilOperation) : void {
+
+        let gl = this.glCtx;
+
+        const LOOKUP = [gl.ZERO, gl.KEEP];
+
+        gl.stencilOp(LOOKUP[op], LOOKUP[op], LOOKUP[op]);
+    }
 }

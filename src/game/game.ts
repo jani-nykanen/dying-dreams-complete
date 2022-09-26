@@ -159,8 +159,21 @@ export class Game implements Scene {
 
     public redraw(canvas : Canvas) : void {
 
+        const SHADOW_OFF = 6;
+
         this.drawBackground(canvas);
-        this.stage.draw(canvas);
+
+        // Shadows
+        canvas.setColor(0, 0, 0, 0.25);
+        canvas.toggleSilhouetteRendering(true);
+        canvas.move(SHADOW_OFF, SHADOW_OFF);
+        this.stage.drawBase(canvas, true);
+
+        canvas.toggleSilhouetteRendering(false);
+        canvas.setColor();
+        canvas.moveTo();
+        this.stage.drawBase(canvas);
+        this.stage.drawTopLayer(canvas);
 
         if (this.pauseMenu.isActive()) {
 
