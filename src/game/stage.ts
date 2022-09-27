@@ -656,10 +656,13 @@ export class Stage {
         let shift : number;
         let phase : number;
 
+        let bmpBed = canvas.getBitmap("bed");
+
         this.activeState.iterate(0, (x : number, y : number, v : number) => {
 
             dx = x*TILE_WIDTH;
             dy = y*TILE_HEIGHT;
+            shift = 0;
 
             switch (v) {
 
@@ -727,20 +730,22 @@ export class Stage {
                 break;
 
             // Button
+            case 16:
+                shift = 80;
             case 11:
 
                 if (this.activeState.getTile(1, x, y) == 0) {
                 //   || (this.moving && this.moveTimer < 0.5)) {
 
                     canvas.drawBitmapRegion(bmp, 
-                        TILE_WIDTH*2, TILE_HEIGHT*2 + TILE_HEIGHT/2, 
+                        TILE_WIDTH*2, TILE_HEIGHT*2 + TILE_HEIGHT/2 + shift, 
                         TILE_WIDTH, TILE_HEIGHT/2, 
                         dx, dy + TILE_HEIGHT/2);
                 }
                 else {
 
                     canvas.drawBitmapRegion(bmp, 
-                        TILE_WIDTH*2, TILE_HEIGHT*2, 
+                        TILE_WIDTH*2, TILE_HEIGHT*2 + shift, 
                         TILE_WIDTH, TILE_HEIGHT/2, 
                         dx, dy + TILE_HEIGHT/2);
                 }
@@ -767,6 +772,12 @@ export class Stage {
                 phase = (x % 2 == y % 2) ? 0.5 : 0;
                 shift = Math.sin((this.staticAnimationTimer + phase) * Math.PI * 2) * 4; 
                 canvas.drawBitmapRegion(bmp, TILE_WIDTH, TILE_HEIGHT*3, TILE_WIDTH, TILE_HEIGHT, dx, dy + shift);
+                break;
+
+            // Bed
+            case 17:
+
+                canvas.drawBitmap(bmpBed, dx - 80, dy - 160);
                 break;
 
             default:

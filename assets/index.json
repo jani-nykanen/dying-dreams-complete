@@ -11,6 +11,7 @@
         {"name": "snowflake", "path": "snowflake.png"},
         {"name": "stars", "path": "stars.png"},
         {"name": "logo", "path": "logo.png"},
+        {"name": "bed", "path": "bed.png"},
         {"name": "staticTiles", "path": "static_tiles.png"}
     ],
 
@@ -58,6 +59,7 @@
         {"name": "21", "path": "21.tmx"},
         {"name": "22", "path": "22.tmx"},
         {"name": "23", "path": "23.tmx"},
-        {"name": "24", "path": "24.tmx"}
+        {"name": "24", "path": "24.tmx"},
+        {"name": "25", "path": "25.tmx"}
     ]
 }
