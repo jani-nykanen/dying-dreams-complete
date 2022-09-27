@@ -27,7 +27,9 @@
         {"name": "select", "path": "select.wav"},
         {"name": "toggle1", "path": "toggle1.wav"},
         {"name": "toggle2", "path": "toggle2.wav"},
+        {"name": "boost", "path": "boost.wav"},
         {"name": "key", "path": "key.wav"},
+        {"name": "puff", "path": "puff.wav"},
 
         {"name": "theme", "path": "theme.ogg"},
         {"name": "victory", "path": "victory.ogg"}

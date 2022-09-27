@@ -5,6 +5,7 @@ import { Stage } from "./stage.js";
 import { TransitionType } from "../core/transition.js";
 import { Scene, SceneParam } from "../core/scene.js";
 import { CoreEvent } from "../core/event.js";
+import { RGBA } from "../common/rgba.js";
 
 
 const HINTS = [
@@ -72,7 +73,7 @@ export class Game implements Scene {
                     event.transition.activate(true, TransitionType.Fade,
                         1.0/30.0, () => {
                             event.changeScene("titlescreen", 1);
-                        }, 6);
+                        });
                 })
             ]
         );
@@ -164,36 +165,35 @@ export class Game implements Scene {
 
         if (this.stage.update(event, event.assets)) {
 
-            if (event.assets.getTilemap(String(this.stageIndex+1)) == undefined) {
+            event.transition.activate(true, TransitionType.Circle, 1.0/30.0,
+            () => {
 
-                event.transition.activate(true, TransitionType.Fade, 1.0/60.0, (event : CoreEvent) => {
+                try {
 
-                    event.transition.deactivate();
-                    event.changeScene("story", 1);
+                    window.localStorage.setItem("dying_dreams_complete_save", String(this.stageIndex+1));
+                }
+                catch (e) {
 
-                }, 6);
-            }
-            else {
+                    console.log(e);
+                }
+                ++ this.stageIndex;
+                this.stage.changeStage(this.stageIndex, event);
+                this.hintPos = 0;
 
-                event.transition.activate(true, TransitionType.Circle, 1.0/30.0,
-                () => {
-
-                    try {
-
-                        window.localStorage.setItem("dying_dreams_complete_save", String(this.stageIndex+1));
-                    }
-                    catch (e) {
-
-                        console.log(e);
-                    }
-                    ++ this.stageIndex;
-                    this.stage.changeStage(this.stageIndex, event);
-                    this.hintPos = 0;
-
-                    event.audio.resumeMusic();
-                });
-            }
+                 event.audio.resumeMusic();
+            });
         } 
+
+        if (this.stage.isBedDead()) {
+
+            event.audio.stopMusic();
+            event.transition.activate(true, TransitionType.Fade, 1.0/120.0, (event : CoreEvent) => {
+
+                event.transition.activate(false, TransitionType.Fade, 1.0/30.0, () => {}, RGBA.white());
+                event.changeScene("story", 1);
+
+            }, RGBA.white());
+        }
     }
 
 

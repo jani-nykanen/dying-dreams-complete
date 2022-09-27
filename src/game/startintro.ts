@@ -14,7 +14,7 @@ export class StartIntro implements Scene {
 
     public init(param: SceneParam, event: CoreEvent): void { 
 
-        event.transition.activate(false, TransitionType.Fade, 1.0/30.0, () => {}, 6);
+        event.transition.activate(false, TransitionType.Fade, 1.0/30.0, () => {});
     }
 
 
@@ -43,7 +43,7 @@ export class StartIntro implements Scene {
 
                         ++ this.phase;
                     }
-                }, 6);
+                });
         }
     }
 

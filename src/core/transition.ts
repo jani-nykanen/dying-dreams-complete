@@ -1,3 +1,4 @@
+import { RGBA } from "../common/rgba.js";
 import { Canvas } from "../renderer/canvas.js";
 import { CoreEvent } from "./event.js";
 
@@ -17,7 +18,7 @@ export class Transition {
     private effectType : TransitionType = TransitionType.None;
     private active : boolean = false;
     private speed : number = 1.0;
-    private param : number = 0.0;
+    private param : number | RGBA = 0.0;
     
     private callback : ((event : CoreEvent) => void) = (() => {});
 
@@ -29,7 +30,7 @@ export class Transition {
 
 
     public activate(fadeOut : boolean, type : TransitionType, speed : number, 
-        callback : (event : CoreEvent) => any, param = 0) : void {
+        callback : (event : CoreEvent) => any, param : number | RGBA = 0) : void {
 
         this.fadeOut = fadeOut;
         this.speed = speed;
@@ -74,17 +75,18 @@ export class Transition {
 
         let maxRadius : number;
         let radius : number;
+        let color : RGBA = RGBA.black();
 
         switch (this.effectType) {
 
         case TransitionType.Fade:
-/*
-            if (this.param > 0) {
 
-                t = Math.round(t * this.param) / this.param;
+            if (typeof(this.param) != "number") {
+
+                color = this.param as RGBA;
             }
-            */
-            canvas.setColor(0, 0, 0, t)
+
+            canvas.setColor(color.r, color.g, color.b, t)
                   .fillRect(0, 0, canvas.width, canvas.height);
             break;
 

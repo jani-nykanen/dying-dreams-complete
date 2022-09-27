@@ -7,6 +7,7 @@ import { Bat, nextParticle, RubbleParticle, StarParticle, VanishingLock } from "
 import { Direction, PuzzleState } from "./puzzlestate.js";
 import { Snowfall } from "./snowfall.js";
 import { COLUMN_COUNT, createTerrainMap } from "./terrainmap.js";
+import { Bed } from "./bed.js";
 
 
 const SOLID_TILES = [1, 3, 8, 9, 13, 14];
@@ -53,6 +54,8 @@ export class Stage {
     private cleared : boolean = false;
     private clearTimer = 0.0;
 
+    private bed : Bed;
+
     public readonly width = 10;
     public readonly height = 9;
 
@@ -86,6 +89,8 @@ export class Stage {
         this.locks = new Array<VanishingLock> ();
 
         this.snowfall = new Snowfall();
+
+        this.bed = new Bed(this.stars);
     }
 
 
@@ -421,6 +426,19 @@ export class Stage {
     }
 
 
+    private launchBed(event : CoreEvent) : void {
+
+        this.activeState.iterate(0, (x : number, y : number, v : number) => {
+
+            if (v == 17) {
+
+                this.activeState.setTile(0, x, y, 0);
+                this.bed.spawn((x+0.5) * TILE_WIDTH, (y+1) * TILE_HEIGHT, event);
+            }
+        });
+    }
+
+
     private checkStaticTileEvents(assets : Assets, event : CoreEvent) : boolean {
 
         const HURTING_TILES = [5, 6, 7];
@@ -443,17 +461,22 @@ export class Stage {
             bottom = this.activeState.getTile(0, x, y);
             top = this.activeState.getTile(1, x, y);
             
+            // Check special ending button
+            if (bottom == 16 && top == 10) {
+
+                event.audio.playSample(assets.getSample("toggle1"), 0.60);
+                this.launchBed(event);
+            }
             // Check buttons
-            if (bottom == 11) {
+            else if (bottom == 11) {
 
                 hasButtons = true;
 
                 if (top == 0 && !hasUnpressedButtons)
                     hasUnpressedButtons = true;
             }
-
             // Key
-            if (bottom == 15 && top == 4) {
+            else if (bottom == 15 && top == 4) {
 
                 this.activeState.setTile(0, x, y, 0);
                 event.audio.playSample(assets.getSample("key"), 0.60);
@@ -826,6 +849,12 @@ export class Stage {
         let row = 0;
         if (!climbing && this.activeState.getTile(1, x, y-1) == 4)
             row = 1;
+
+        if (this.bed.isFalling()) {
+            
+            row = 1;
+            frame = 7;
+        }
     
         canvas.drawBitmapRegion(bmp, 
                 frame*96, row*96, 96, 96, 
@@ -966,33 +995,41 @@ export class Stage {
     public update(event : CoreEvent, assets : Assets) : boolean {
 
         this.move(assets, event);
-        if (!this.cleared) {
 
-            if (this.startTimer > 0) {
+        if (this.bed.isActive()) {
 
-                this.startTimer -= event.step;
-            }
-            else {
-
-                this.control(assets, event);
-
-                if (event.input.getAction("undo") == InputState.Pressed) {
-
-                    event.audio.playSample(assets.getSample("choose"), 0.60);
-                    this.undo();
-                }
-                else if (event.input.getAction("restart") == InputState.Pressed) {
-
-                    event.audio.playSample(assets.getSample("choose"), 0.60);
-                    this.restart();
-                }
-            }
+            this.bed.update(event);
         }
         else {
 
-            if ((this.clearTimer -= event.step) <= 0) {
+            if (!this.cleared) {
 
-                return true;
+                if (this.startTimer > 0) {
+
+                    this.startTimer -= event.step;
+                }
+                else {
+
+                    this.control(assets, event);
+
+                    if (event.input.getAction("undo") == InputState.Pressed) {
+
+                        event.audio.playSample(assets.getSample("choose"), 0.60);
+                        this.undo();
+                    }
+                    else if (event.input.getAction("restart") == InputState.Pressed) {
+
+                        event.audio.playSample(assets.getSample("choose"), 0.60);
+                        this.restart();
+                    }
+                }
+            }
+            else {
+
+                if ((this.clearTimer -= event.step) <= 0) {
+
+                    return true;
+                }
             }
         }
         return false;
@@ -1031,6 +1068,15 @@ export class Stage {
         let bmpStaticTiles = canvas.getBitmap("staticTiles");
         let bmpFigure = canvas.getBitmap("figure");
         let bmpBat = canvas.getBitmap("bat");
+        let bmpStars = canvas.getBitmap("stars");
+
+        if (!shadowLayer && this.bed.isDead()) {
+
+            for (let s of this.stars) {
+
+                s.draw(canvas, bmpStars);
+            }    
+        }
 
         this.drawNonTerrainStaticTiles(canvas, bmpStaticTiles, shadowLayer);
         this.drawTerrain(canvas, bmpStaticTiles);
@@ -1046,6 +1092,9 @@ export class Stage {
 
             b.draw(canvas, bmpBat);
         }
+
+        if (!shadowLayer || !this.bed.isFalling())
+            this.bed.draw(canvas);
     }
 
 
@@ -1060,9 +1109,12 @@ export class Stage {
             l.draw(canvas, bmpStaticTiles);
         }
 
-        for (let s of this.stars) {
+        if (!this.bed.isDead()) {
 
-            s.draw(canvas, bmpStars);
+            for (let s of this.stars) {
+
+                s.draw(canvas, bmpStars);
+            }
         }
 
         this.snowfall.draw(canvas);
@@ -1079,6 +1131,8 @@ export class Stage {
 
             this.drawStageStart(canvas, bmpFontBig);
         }
+
+        this.bed.draw(canvas);
     }
 
 
@@ -1131,5 +1185,9 @@ export class Stage {
     }
 
 
-    public canBeInterrupted = () : boolean => !this.cleared && this.startTimer <= 0;
+    public canBeInterrupted = () : boolean => !this.cleared && this.startTimer <= 0 && !this.bed.isActive();
+
+
+    // What
+    public isBedDead = () : boolean => this.bed.isActive() && this.bed.isDead();
 }

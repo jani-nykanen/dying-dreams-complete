@@ -96,7 +96,7 @@ export class StoryScreen implements Scene {
                     else {
 
                         this.isEnding = true;
-                        event.transition.activate(false, TransitionType.Fade, 1.0/120.0, () => {}, 6);
+                        event.transition.activate(false, TransitionType.Fade, 1.0/120.0, () => {});
                     }
                 }
                 else {

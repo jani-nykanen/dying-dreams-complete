@@ -53,7 +53,7 @@ export class Renderer {
 
     private activeMesh : Mesh | null = null;
     private activeTexture : Bitmap | null = null;
-    private activeColor : RGBA = RGBA.white();
+    private activeColor : RGBA = new RGBA(1);
 
     private meshRectangle : Mesh;
 

@@ -24,7 +24,7 @@ export class RGBA {
 		new RGBA(color.r * scalar, color.g * scalar, color.b * scalar, color.a);
 
 
-	static white = () : RGBA => new RGBA(1);
+	static white = () : RGBA => new RGBA(255);
     static black = () : RGBA => new RGBA(0);
 
 }
