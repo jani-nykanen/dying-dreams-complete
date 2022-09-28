@@ -38,16 +38,22 @@ export class Game implements Scene {
 
         this.pauseMenu = new Menu(
             [
-                new MenuButton("Resume", () => this.pauseMenu.deactivate()),
+                new MenuButton("Resume", (event : CoreEvent) => {
 
-                new MenuButton("Restart", () => {
+                    event.audio.resumeMusic();
+                    this.pauseMenu.deactivate();
+                }),
 
+                new MenuButton("Restart", (event : CoreEvent) => {
+
+                    event.audio.resumeMusic();
                     this.stage.restart();
                     this.pauseMenu.deactivate();
                 }),
 
-                new MenuButton("Undo", () => {
+                new MenuButton("Undo", (event : CoreEvent) => {
 
+                    event.audio.resumeMusic();
                     this.stage.undo();
                     this.pauseMenu.deactivate();
                 }),
@@ -63,6 +69,7 @@ export class Game implements Scene {
 
                         event.audio.toggle(true);
                         event.audio.fadeInMusic(event.assets.getSample("theme"), MUSIC_VOL, 1000);
+                        event.audio.pauseMusic();
                     }
                     this.pauseMenu.changeButtonText(3, event.audio.getStateString());
                 }),
@@ -155,6 +162,7 @@ export class Game implements Scene {
             event.input.getAction("pause") == InputState.Pressed) {
 
             event.audio.playSample(event.assets.getSample("pause"), 0.60);
+            event.audio.pauseMusic();
             this.pauseMenu.activate(0);
             return;
         }

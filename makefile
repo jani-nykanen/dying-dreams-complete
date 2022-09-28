@@ -23,28 +23,3 @@ dist:
 	zip -r dist.zip index.html
 
 all: js
-
-
-minify: js_full
-	mkdir -p temp
-	java -jar $(CLOSURE_PATH) --js js/*.js --js_output_file temp/out.js --compilation_level ADVANCED_OPTIMIZATIONS --language_out ECMASCRIPT_2021
-	cat misc/index_top.txt > temp/index.html
-	cat temp/out.js >> temp/index.html
-	cat misc/index_bottom.txt >> temp/index.html
-	cp b.png temp/b.png
-	cp f.png temp/f.png
-	rm temp/out.js
-
-pack: minify
-#	test -f dist.zip && rm dist.zip
-	(cd temp; zip -r ../dist.zip .)
-	advzip -z dist.zip
-
-
-playtest: pack
-	mkdir -p play
-	unzip -d play dist.zip
-
-
-levels:
-	./scripts/mapconv.py

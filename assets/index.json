@@ -12,6 +12,7 @@
         {"name": "stars", "path": "stars.png"},
         {"name": "logo", "path": "logo.png"},
         {"name": "bed", "path": "bed.png"},
+        {"name": "audioStart", "path": "audio_start.png"},
         {"name": "staticTiles", "path": "static_tiles.png"}
     ],
 

@@ -621,9 +621,10 @@ export class Stage {
 
                 if (tid == 0) {
 
-                    canvas.setColor(255, 170, 85)
-                          .fillRect(x*(TILE_WIDTH/2), y*(TILE_HEIGHT/2), TILE_WIDTH/2, TILE_HEIGHT/2)
-                          .setColor();
+                    canvas.drawBitmapRegion(bmp, 
+                        TILE_WIDTH * 3, TILE_HEIGHT * 3, 
+                        TILE_WIDTH, TILE_HEIGHT, 
+                        x*(TILE_WIDTH/2), y*(TILE_HEIGHT/2));
                 }
                 else {
                     

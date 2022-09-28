@@ -1,6 +1,8 @@
+import { clamp } from "../common/math.js";
 import { Vector2 } from "../common/vector.js";
 import { Assets } from "../io/assets.js";
 import { Bitmap } from "./bitmap.js";
+import { Mesh } from "./mesh.js";
 import { Renderer, ShaderType } from "./renderer.js";
 import { Sprite } from "./sprite.js";
 import { Transformations } from "./transform.js";
@@ -34,6 +36,8 @@ export class Canvas {
 
     private silhouetteActive : boolean = false;
 
+    private meshOuterCircle : Mesh;
+
     private readonly assets : Assets;
 
     public readonly width : number;
@@ -58,6 +62,57 @@ export class Canvas {
 
         this.width = width;
         this.height = height;
+
+        this.createOuterCircleMesh(120);
+    }
+
+
+    private createOuterCircleMesh(precision : number) : void {
+
+        const MAX_RADIUS = Math.SQRT2 + 0.1;
+
+        let vertices = new Array<number>();
+        let uvs = new Array<number>();
+        let indices = new Array<number>();
+
+        uvs = (new Array<number> (precision * 6 * 2)).fill(0.0);
+
+        let angle : number;
+        let angleStep = Math.PI*2 / precision;
+
+        let A = new Vector2();
+        let B = new Vector2();
+        let C = new Vector2();
+        let D = new Vector2();
+
+        for (let i = 0; i < precision; ++ i) {
+
+            angle = i * angleStep;
+
+            A.x = Math.cos(angle);
+            A.y = Math.sin(angle);
+            B.x = clamp(A.x * MAX_RADIUS, -1, 1);
+            B.y = clamp(A.y * MAX_RADIUS, -1, 1);
+
+            C.x = Math.cos(angle + angleStep);
+            C.y = Math.sin(angle + angleStep);
+            D.x = clamp(C.x * MAX_RADIUS, -1, 1);
+            D.y = clamp(C.y * MAX_RADIUS, -1, 1);
+
+            vertices.push(
+                A.x, A.y, B.x, B.y, D.x, D.y,
+                D.x, D.y, C.x, C.y, A.x, A.y);
+        }
+
+        for (let i = 0; i < vertices.length/2; ++ i) {
+
+            indices.push(indices.length);
+        }
+        
+        this.meshOuterCircle = this.renderer.constructMesh(
+            new Float32Array(vertices),
+            new Uint16Array(indices),
+            new Float32Array(uvs));
     }
 
 
@@ -313,37 +368,30 @@ export class Canvas {
     }
 
 
-    public fillCircleOutside(r : number, cx = this.width/2, cy = this.height/2) : Canvas {
+    public fillCircleOutside(r : number) : Canvas {
 
-        let start = Math.max(0, cy - r) | 0;
-        let end = Math.min(this.height, cy + r) | 0;
+        let cx = this.width/2;
+        let cy = this.height/2
 
-        if (start > 0)
-            this.fillRect(0, 0, this.width, start);
-        if (end < this.height)
+        let end = Math.min(this.height, cy + r);
+
+        this.renderer.changeShader(ShaderType.NoTexture);
+
+        // Top bar & bottom bards
+        if (cy - r > 0) {
+            
+            this.fillRect(0, 0, this.width, cy - r);
             this.fillRect(0, end, this.width, this.height - end);
-
-        let dy : number;
-        let px1 : number;
-        let px2 : number;
-        
-        for (let y = start; y < end; ++ y) {
-
-            dy = y - cy;
-
-            if (Math.abs(dy) >= r) {
-
-                this.fillRect(0, y, this.width, 1);
-                continue;
-            }
-
-            px1 = Math.round(cx - Math.sqrt(r*r - dy*dy));
-            px2 = Math.round(cx + Math.sqrt(r*r - dy*dy));
-            if (px1 > 0)
-                this.fillRect(0, y, px1, 1);
-            if (px2 < this.width)
-                this.fillRect(px2, y, this.width - px1, 1);
         }
+        // Left & right bars
+        if (cx - r > 0) {
+
+            this.fillRect(0, end, cx - r, this.height - end*2);   
+            this.fillRect(cx + r, end, cx - r, this.height - end*2);    
+        } 
+        
+        this.renderer.setVertexTransform(cx, cy, r, r);
+        this.renderer.drawMesh(this.meshOuterCircle);
 
         return this;
     }

@@ -34,7 +34,7 @@ export class StartScreen implements Scene {
 
     private goToStartIntro(event : CoreEvent) : void {
 
-        event.changeScene("intro");
+        event.changeScene("titlescreen");
     }
 
 
@@ -55,10 +55,10 @@ export class StartScreen implements Scene {
         const YOFF = -8;
         const BOX_HEIGHT_1 = 256;
         const BOX_WIDTH_1 = 600;
-        const BOX_OFF_1 = 48;
+        const BOX_OFF_1 = 200;
         const BOX_HEIGHT_2 = 128;
         const BOX_WIDTH_2 = 160;
-        const BOX_OFF_2 = 400;
+        const BOX_OFF_2 = 512;
         const SHADOW_OFF = 16;
 
         canvas.clear(85, 170, 255);
@@ -76,6 +76,13 @@ export class StartScreen implements Scene {
             .setColor()
             .drawText(font, TEXT, 128, BOX_OFF_1+24, XOFF, YOFF, TextAlign.Left, 0.75, 0.75);
         
-        this.menu.draw(canvas, -16, 108, false);
+        let menuOff = BOX_OFF_2 - canvas.height/2 + 64;
+        this.menu.draw(canvas, 0, menuOff, false);
+
+        let bmpNote = canvas.getBitmap("audioStart");
+        if (bmpNote == undefined)
+            return;
+
+        canvas.drawBitmap(bmpNote, canvas.width/2 - bmpNote.width/2, 16);
     }
 }
