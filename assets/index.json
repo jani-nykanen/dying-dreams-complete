@@ -32,6 +32,7 @@
         {"name": "puff", "path": "puff.wav"},
 
         {"name": "theme", "path": "theme.ogg"},
+        {"name": "titletheme", "path": "titletheme.ogg"},
         {"name": "victory", "path": "victory.ogg"}
     ],
 

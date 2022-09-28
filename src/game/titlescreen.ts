@@ -6,6 +6,9 @@ import { Scene, SceneParam } from "../core/scene.js";
 import { CoreEvent } from "../core/event.js";
 
 
+const MUSIC_VOL = 0.40;
+
+
 export class TitleScreen implements Scene {
 
 
@@ -40,9 +43,18 @@ export class TitleScreen implements Scene {
                     }
                     this.startGame(event, index);
                 }),
-                new MenuButton("AUDIO: OFF", (event : CoreEvent) => {
+                new MenuButton("Audio: Off", (event : CoreEvent) => {
 
-                    event.audio.toggle();
+                    if (event.audio.isEnabled()) {
+
+                        event.audio.stopMusic();
+                        event.audio.toggle(false);
+                    }
+                    else {
+
+                        event.audio.toggle(true);
+                        event.audio.fadeInMusic(event.assets.getSample("titletheme"), MUSIC_VOL, 1000);
+                    }
                     this.startMenu.changeButtonText(2, event.audio.getStateString());
                 })
             ], true);
@@ -51,6 +63,7 @@ export class TitleScreen implements Scene {
     
     private startGame(event : CoreEvent, index = 1) : void {
 
+        event.audio.stopMusic();
         event.transition.activate(true, TransitionType.Circle, 1.0/30.0,
             (event : CoreEvent) => {
 
@@ -92,6 +105,7 @@ export class TitleScreen implements Scene {
         const POS_Y = [32, 80, 96, 64, 120, 76, 48];
         const POS_X = [32, 16, 56, 72, 108, 128, 144];
         const AMPLITUDE = [4, 8, 6, 16, 6, 12, 4];
+        const SCALE = [0.40, 0.70, 0.50, 1.0, 0.60, 0.80, 0.33];
 
         let bmp = canvas.getBitmap("bat");
         let dx : number;
@@ -102,14 +116,24 @@ export class TitleScreen implements Scene {
 
         for (let i = 0; i < POS_X.length; ++ i) {
 
-            dx = (Math.round((POS_X[i]*5 - 48 + this.batTimers[i])) % (176*5)) - 96;
+            
+            dx = (Math.round((POS_X[i]*5 - 48 + this.batTimers[i])) % (176*5)) - 48;
             w = this.waveTimer + i * (Math.PI*2 / 6);
-            dy = POS_Y[i]*5 - 20 + Math.round(Math.sin(w) * AMPLITUDE[i] *5);
+            dy = POS_Y[i]*5 - 20 + Math.round(Math.sin(w) * AMPLITUDE[i] * 5) + 24;
 
-            frame = (this.batTimers[i] % 16) < 8 ? 0 : 1;
+            frame = ((this.batTimers[i]/SCALE[i]) % 16) < 8 ? 0 : 1;
 
-            canvas.drawBitmapRegion(bmp, 0, frame*48, 96, 48, dx, dy);
+            canvas.transform.push()
+                  .translate(dx, dy) 
+                  .rotate(Math.cos(w) * Math.PI/4)
+                  .scale(SCALE[i], SCALE[i])
+                  .use();     
+
+            canvas.drawBitmapRegion(bmp, 0, frame*48, 96, 48, -48, -24);
+
+            canvas.transform.pop();
         }
+        canvas.transform.use();
     }
 
 
@@ -126,6 +150,8 @@ export class TitleScreen implements Scene {
                 this.startMenu.activate(1);
             }
         }
+
+        event.audio.fadeInMusic(event.assets.getSample("titletheme"), MUSIC_VOL, 1000);
     }
 
 
@@ -166,13 +192,12 @@ export class TitleScreen implements Scene {
 
         let font = canvas.getBitmap("font");
 
+        canvas.setColor(170, 170, 170);
         canvas.drawBitmap(canvas.getBitmap("background"), 0, -8)
-              .setColor(0, 0, 0, 0.33)
-              .fillRect()
-              .setColor();
 
         this.drawBats(canvas);
               
+        canvas.setColor();
         canvas.drawText(font, "(c)2022 Jani Nyk@nen",
                     canvas.width/2, canvas.height-36, 
                     -24, 0, TextAlign.Center, 0.5, 0.5);

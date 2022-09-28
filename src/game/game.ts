@@ -69,6 +69,7 @@ export class Game implements Scene {
 
                 new MenuButton("Quit", (event : CoreEvent) => {
 
+                    event.audio.stopMusic();
                     this.pauseMenu.deactivate();
                     event.transition.activate(true, TransitionType.Fade,
                         1.0/30.0, () => {
