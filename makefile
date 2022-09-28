@@ -17,7 +17,7 @@ server:
 linecount:
 	(cd src; find . -name '*.ts' | xargs wc -l)
 
-dist:
+dist: js_full
 	zip -r dist.zip js
 	zip -r dist.zip assets
 	zip -r dist.zip index.html
