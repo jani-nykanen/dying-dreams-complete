@@ -623,7 +623,7 @@ export class Stage {
 
                     canvas.drawBitmapRegion(bmp, 
                         TILE_WIDTH * 3, TILE_HEIGHT * 3, 
-                        TILE_WIDTH, TILE_HEIGHT, 
+                        TILE_WIDTH/2, TILE_HEIGHT/2, 
                         x*(TILE_WIDTH/2), y*(TILE_HEIGHT/2));
                 }
                 else {
