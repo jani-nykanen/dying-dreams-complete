@@ -65,19 +65,23 @@ export class Input {
         this.oldStick = this.stick.clone();
         this.stick.zeros();
 
-        if ((this.keyboard.getState("ArrowLeft") & InputState.DownOrPressed) == 1) {
+        if ((this.keyboard.getState("ArrowLeft") & InputState.DownOrPressed) == 1 ||
+            (this.gamepad.getButtonState(14) & InputState.DownOrPressed) == 1) {
 
             this.stick.x = -1;
         }
-        else if ((this.keyboard.getState("ArrowRight") & InputState.DownOrPressed) == 1) {
+        else if ((this.keyboard.getState("ArrowRight") & InputState.DownOrPressed) == 1  ||
+            (this.gamepad.getButtonState(15) & InputState.DownOrPressed) == 1) {
 
             this.stick.x = 1;
         }
-        if ((this.keyboard.getState("ArrowUp") & InputState.DownOrPressed) == 1) {
+        if ((this.keyboard.getState("ArrowUp") & InputState.DownOrPressed) == 1  ||
+            (this.gamepad.getButtonState(12) & InputState.DownOrPressed) == 1) {
 
             this.stick.y = -1;
         }
-        else if ((this.keyboard.getState("ArrowDown") & InputState.DownOrPressed) == 1) {
+        else if ((this.keyboard.getState("ArrowDown") & InputState.DownOrPressed) == 1  ||
+            (this.gamepad.getButtonState(13) & InputState.DownOrPressed) == 1) {
 
             this.stick.y = 1;
         }
